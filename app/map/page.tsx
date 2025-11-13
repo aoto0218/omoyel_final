@@ -1,3 +1,3 @@
 export default function Page() {
-    return <h1>Hello im map</h1>
+    return  <h1 className="text-3xl font-bold underline">Hello im map</h1>
   }
