@@ -1,13 +1,14 @@
 # omoyel最終審査会のためのアプリケーション
 
 
-## map
-## ai
-## review
-## filter
+## 機能
+1.map
+2.ai
+3.review
+4.ilter
 
 
-開発モードで実行コマンド
+### 開発モードで実行コマンド
 npm run dev
 
 
