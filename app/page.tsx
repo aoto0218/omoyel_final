@@ -1,65 +1,176 @@
-import Image from "next/image";
+// app/page.tsx
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { Header } from '@/components/Header';
+import { Dropdown } from '@/components/Dropdown';
+import { SearchBar } from '@/components/SearchBar';
+import { ActionButton } from '@/components/ActionButton';
+import { SalonCard } from '@/components/SalonCard';
+import { AREAS, MENUS, MOCK_SALONS } from '@/constants/data';
+import {MessageCircle} from 'lucide-react';
 
 export default function Home() {
+  const [areaOpen, setAreaOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+  const [selectedMenus, setSelectedMenus] = useState<string[]>([]);
+
+  // ドロップダウン外クリックで閉じる
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setAreaOpen(false);
+      setMenuOpen(false);
+    };
+
+    if (areaOpen || menuOpen) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [areaOpen, menuOpen]);
+
+  const toggleSelection = (
+    item: string, 
+    selected: string[], 
+    setSelected: React.Dispatch<React.SetStateAction<string[]>>
+  ) => {
+    setSelected(prev => 
+      prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
+    );
+  };
+
+  const handleDropdownChange = (type: 'area' | 'menu', open: boolean) => {
+    if (type === 'area') {
+      setAreaOpen(open);
+      if (open) setMenuOpen(false);
+    } else {
+      setMenuOpen(open);
+      if (open) setAreaOpen(false);
+    }
+  };
+
+  const handleSalonVisit = () => {
+    console.log('サロン見学ページへ遷移');
+    // Router.push('/salon-visit') など
+  };
+
+  const handleIntern = () => {
+    console.log('インターンページへ遷移');
+    // Router.push('/intern') など
+  };
+
+  const handleVisit = (salonId: number) => {
+    console.log(`サロンID ${salonId} の見学予約`);
+    // モーダルを開く or 詳細ページへ遷移
+  };
+
+  const handleConsult = (salonId: number) => {
+    console.log(`サロンID ${salonId} の相談`);
+    // 相談フォームモーダルを開く
+  };
+
+  // フィルタリングロジック
+  const filteredSalons = MOCK_SALONS.filter(salon => {
+    // エリアフィルター
+    if (selectedAreas.length > 0 && !selectedAreas.includes(salon.location)) {
+      return false;
+    }
+    
+    // メニューフィルター
+    if (selectedMenus.length > 0) {
+      const hasMenu = salon.tags.some(tag => selectedMenus.includes(tag));
+      if (!hasMenu) return false;
+    }
+    
+    // 検索クエリフィルター
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      return salon.name.toLowerCase().includes(query) || salon.location.toLowerCase().includes(query);
+    }
+    
+    return true;
+  });
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-indigo-100">
+      <div className="sticky top-0 z-50 bg-white shadow-sm">
+        <Header />
+      </div>
+
+      {/* Search Filters */}
+      <div className="sticky top-[88px] z-40">
+        <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+          {/* Area and Menu Dropdowns */}
+          <div className="grid grid-cols-2 gap-4" onClick={(e) => e.stopPropagation()}>
+            <Dropdown
+              label="エリア"
+              options={AREAS}
+              selected={selectedAreas}
+              onToggle={(area) => toggleSelection(area, selectedAreas, setSelectedAreas)}
+              isOpen={areaOpen}
+              onOpenChange={(open) => handleDropdownChange('area', open)}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            
+            <Dropdown
+              label="メニュー"
+              options={MENUS}
+              selected={selectedMenus}
+              onToggle={(menu) => toggleSelection(menu, selectedMenus, setSelectedMenus)}
+              isOpen={menuOpen}
+              onOpenChange={(open) => handleDropdownChange('menu', open)}
+            />
+          </div>
+
+          {/* Search Bar */}
+          <SearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="見学したい店舗名で検索..."
+          />
+
+          {/* Action Buttons */}
+          <div className="grid grid-cols-2 gap-4">
+            <ActionButton onClick={handleSalonVisit}>
+              サロン見学
+            </ActionButton>
+            <ActionButton onClick={handleIntern}>
+              インターン
+            </ActionButton>
+          </div>
         </div>
-      </main>
+      </div>
+
+      {/* Salon Cards */}
+      <div className="max-w-2xl mx-auto px-4 space-y-6 pb-8">
+        {filteredSalons.length > 0 ? (
+          filteredSalons.map((salon) => (
+            <SalonCard 
+              key={salon.id} 
+              salon={salon} 
+              onVisit={handleVisit}
+              onConsult={handleConsult}
+            />
+          ))
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">
+              条件に合うサロンが見つかりませんでした
+            </p>
+          </div>
+        )}
+      </div>
+
+      <button
+        onClick={() => handleConsult(0)}
+        className="fixed bottom-6 right-6 bg-indigo-400 text-white px-6 py-3 rounded-full shadow-lg hover:bg-indigo-500 transition flex items-center gap-2 text-sm font-medium z-50"
+      >
+        マッチするサロンを相談
+        <MessageCircle className="w-5 h-5" />
+      </button>
     </div>
   );
 }
