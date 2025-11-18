@@ -1,6 +1,8 @@
 // components/SalonCard.tsx
+'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { MapPin, Book, MessageCircle } from 'lucide-react';
 import { Tag } from './Tag';
 import { SalonImage } from './SalonImage';
@@ -11,12 +13,23 @@ export const SalonCard: React.FC<SalonCardProps> = ({
     onVisit,
     onConsult
 }) => {
-    return (
-        <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition relative">
-            {/* Salon Image */}
-            <SalonImage type={salon.imageType} alt={salon.name} />
+    const router = useRouter();
 
-            {/* Salon Info */}
+    const handleCardClick = () => {
+        router.push(`/salon/${salon.id}`);
+    };
+
+    return (
+        <div
+            onClick={handleCardClick}
+            className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition relative cursor-pointer"
+        >
+            <SalonImage
+                type={salon.imageType}
+                alt={salon.name}
+                src={salon.images?.image1 || ''} 
+            />
+
             <div className="p-5">
                 <h3 className="text-xl font-bold text-gray-800 mb-2">{salon.name}</h3>
 
@@ -37,17 +50,22 @@ export const SalonCard: React.FC<SalonCardProps> = ({
                 )}
 
                 <button
-                    onClick={() => onVisit?.(salon.id)}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onVisit?.(salon.id);
+                    }}
                     className="px-6 py-2 bg-white border-2 border-gray-800 text-gray-800 font-medium rounded-full hover:bg-gray-800 hover:text-white transition"
                 >
                     見学
                 </button>
             </div>
 
-            {/* Featured Floating Button */}
             {salon.featured && (
                 <button
-                    onClick={() => onConsult?.(salon.id)}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onConsult?.(salon.id);
+                    }}
                     className="absolute bottom-5 right-5 bg-indigo-400 text-white px-6 py-3 rounded-full shadow-lg hover:bg-indigo-500 transition flex items-center gap-2 text-sm"
                 >
                     マッチするサロンを相談
