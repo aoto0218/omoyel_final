@@ -113,7 +113,7 @@ export const MOCK_SALONS: Salon[] = [
         nameKana: 'ミユーズ シブヤ フラッグ',
         tags: [
             'カット',
-            'オールラウンダー（なんでも）'
+            'なんでも'
         ],
         imageType: 'canvas',
         visitSchedule: '随時相談',
