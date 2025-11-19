@@ -1,12 +1,12 @@
-// app/page.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
-import { SalonCard } from '@/components/SalonCard';
-import { AREAS, MENUS, MOCK_SALONS } from '@/constants/data';
-import { Search, Filter, List, MapPin as MapIcon, ArrowLeft } from 'lucide-react';
+import { SalonList } from '@/components/SalonList';
+import { FilterModal } from '@/components/FilterModal';
+import { AREAS, MOCK_SALONS } from '@/constants/data';
+import { Search, Filter, List, MapPin as MapIcon } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
@@ -35,14 +35,14 @@ export default function Home() {
     };
   }, [showFilterModal]);
 
-  const toggleSelection = (
-    item: string,
-    selected: string[],
-    setSelected: React.Dispatch<React.SetStateAction<string[]>>
-  ) => {
-    setSelected(prev =>
+  const toggleMenuSelection = (item: string) => {
+    setSelectedMenus(prev =>
       prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
     );
+  };
+
+  const handleAreaChange = (area: string) => {
+    setSelectedAreas(area ? [area] : []);
   };
 
   const handleSalonVisit = (salonId: number) => {
@@ -62,7 +62,7 @@ export default function Home() {
     setSelectedMenus([]);
   };
 
-  // フィルタリング部
+  // フィルタリングロジック
   const filteredSalons = MOCK_SALONS.filter(salon => {
     if (selectedAreas.length > 0 && !selectedAreas.includes(salon.location)) {
       return false;
@@ -139,25 +139,14 @@ export default function Home() {
         </div>
       </div>
 
-      {/* サロンカード部 */}
-      <div className="max-w-2xl mx-auto px-4 pt-6 space-y-6 pb-8">
+      {/* サロン表示部 */}
+      <div className="max-w-2xl mx-auto px-4 pt-6 pb-8">
         {viewMode === 'list' ? (
-          filteredSalons.length > 0 ? (
-            filteredSalons.map((salon) => (
-              <SalonCard
-                key={salon.id}
-                salon={salon}
-                onVisit={handleSalonVisit}
-                onConsult={handleConsult}
-              />
-            ))
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">
-                条件に合うサロンが見つかりませんでした
-              </p>
-            </div>
-          )
+          <SalonList
+            salons={filteredSalons}
+            onVisit={handleSalonVisit}
+            onConsult={handleConsult}
+          />
         ) : (
           <div className="bg-white rounded-2xl p-8 text-center">
             <MapIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -166,173 +155,20 @@ export default function Home() {
         )}
       </div>
 
-      {/* フィルターモーダル部 */}
-      {showFilterModal && (
-        <div
-          className="fixed inset-0 bg-white bg-opacity-50 z-50 flex items-end justify-center"
-          onClick={() => setShowFilterModal(false)}
-        >
-          <div
-            className="bg-white w-full max-w-2xl h-full overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* モーダルヘッダー */}
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 z-10">
-              <button
-                onClick={() => setShowFilterModal(false)}
-                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span className="font-medium">戻る</span>
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6">
-              <div className="flex gap-3">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="店舗名で検索"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-white rounded-lg pl-12 pr-4 py-3 text-gray-700 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 border border-gray-200"
-                  />
-                </div>
-                <div className="relative">
-                  <select
-                    value={selectedAreas[0] || ''}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setSelectedAreas(value ? [value] : []);
-                    }}
-                    className="appearance-none bg-white rounded-lg px-4 py-3 pr-10 text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 border border-gray-200 cursor-pointer"
-                  >
-                    <option value="">エリア</option>
-                    {AREAS.map((area) => (
-                      <option key={area} value={area}>
-                        {area}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-3 h-3 rounded-full bg-gray-400"></div>
-                  <h3 className="text-base font-bold text-gray-900">カラー</h3>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {['ワンカラー', 'ダブルカラー', '寒色系', '暖色系'].map((item) => (
-                    <label
-                      key={item}
-                      className="flex items-center gap-3 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedMenus.includes(item)}
-                        onChange={() => toggleSelection(item, selectedMenus, setSelectedMenus)}
-                        className="w-5 h-5 text-indigo-400 rounded border-gray-300 focus:ring-indigo-400"
-                      />
-                      <span className="text-gray-800 text-sm">{item}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-3 h-3 rounded-full bg-gray-400"></div>
-                  <h3 className="text-base font-bold text-gray-900">カット</h3>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {['ロング', 'ボブ'].map((item) => (
-                    <label
-                      key={item}
-                      className="flex items-center gap-3 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedMenus.includes(item)}
-                        onChange={() => toggleSelection(item, selectedMenus, setSelectedMenus)}
-                        className="w-5 h-5 text-indigo-400 rounded border-gray-300 focus:ring-indigo-400"
-                      />
-                      <span className="text-gray-800 text-sm">{item}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-3 h-3 rounded-full bg-gray-400"></div>
-                  <h3 className="text-base font-bold text-gray-900">髪質改善</h3>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {['縮毛矯正', 'トリートメント'].map((item) => (
-                    <label
-                      key={item}
-                      className="flex items-center gap-3 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedMenus.includes(item)}
-                        onChange={() => toggleSelection(item, selectedMenus, setSelectedMenus)}
-                        className="w-5 h-5 text-indigo-400 rounded border-gray-300 focus:ring-indigo-400"
-                      />
-                      <span className="text-gray-800 text-sm">{item}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-3 h-3 rounded-full bg-gray-400"></div>
-                  <h3 className="text-base font-bold text-gray-900">その他</h3>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {['パーマ', 'ヘアメイク', 'メンズ特化', 'ナチュラル', 'まつげ・ブロウ', 'ネイル', '特殊ヘア', 'なんでも'].map((item) => (
-                    <label
-                      key={item}
-                      className="flex items-center gap-3 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedMenus.includes(item)}
-                        onChange={() => toggleSelection(item, selectedMenus, setSelectedMenus)}
-                        className="w-5 h-5 text-indigo-400 rounded border-gray-300 focus:ring-indigo-400"
-                      />
-                      <span className="text-gray-800 text-sm">{item}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex gap-3">
-              <button
-                onClick={clearFilters}
-                className="w-full px-6 py-4 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition text-lg"
-              >
-                クリア
-              </button>
-              <button
-                onClick={applyFilters}
-                className="w-full px-6 py-4 bg-amber-300 text-gray-900 font-bold rounded-xl hover:bg-amber-400 transition text-lg"
-              >
-                決定
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* フィルターモーダル */}
+      <FilterModal
+        isOpen={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        selectedAreas={selectedAreas}
+        onAreaChange={handleAreaChange}
+        selectedMenus={selectedMenus}
+        onMenuToggle={toggleMenuSelection}
+        areas={AREAS}
+        onClear={clearFilters}
+        onApply={applyFilters}
+      />
 
       {/* 相談ボタン部 */}
       {!showFilterModal && (

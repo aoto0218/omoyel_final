@@ -1,4 +1,3 @@
-// components/SalonCard.tsx
 'use client';
 
 import React from 'react';
