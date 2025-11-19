@@ -1,12 +1,7 @@
-// lib/api.ts
-
 import { Salon } from '@/types/salon';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
-/**
- * サロン一覧を取得
- */
 export async function getSalons(params?: {
     areas?: string[];
     menus?: string[];
@@ -49,9 +44,6 @@ export async function getSalons(params?: {
     }
 }
 
-/**
- * サロン詳細を取得
- */
 export async function getSalonById(id: number): Promise<Salon> {
     try {
         const response = await fetch(`${API_BASE_URL}/salons/${id}`);
@@ -68,9 +60,6 @@ export async function getSalonById(id: number): Promise<Salon> {
     }
 }
 
-/**
- * サロン見学を予約
- */
 export async function bookSalonVisit(data: {
     salonId: number;
     name: string;
@@ -100,9 +89,6 @@ export async function bookSalonVisit(data: {
     }
 }
 
-/**
- * サロン相談を送信
- */
 export async function consultSalon(data: {
     salonId: number;
     message: string;

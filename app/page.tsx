@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { SalonList } from '@/components/SalonList';
 import { FilterModal } from '@/components/FilterModal';
-import { AREAS, MOCK_SALONS } from '@/constants/data';
+import { AREAS } from '@/constants/data';
+import { MOCK_SALONS } from '@/constants/salondata';
 import { Search, Filter, List, MapPin as MapIcon } from 'lucide-react';
 
 export default function Home() {
