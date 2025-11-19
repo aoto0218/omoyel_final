@@ -4,7 +4,7 @@ export interface Salon {
     location: string;
     address?:string;
     nameKana?:string;
-    images?:{image1:string,image2:string};
+    images?:{image1:string,image2?:string};
     tags: string[];
     imageType: 'canvas' | 'shell';
     visitSchedule?: string;
