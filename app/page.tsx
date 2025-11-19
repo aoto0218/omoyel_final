@@ -9,6 +9,10 @@ import { AREAS } from '@/constants/data';
 import { MOCK_SALONS } from '@/constants/salondata';
 import { Search, Filter, List, MapPin as MapIcon } from 'lucide-react';
 
+//map系
+import Mapmain from '@/components/mapcomponents/mapmain';
+//map系
+
 export default function Home() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
@@ -135,6 +139,7 @@ export default function Home() {
                 <MapIcon className="w-5 h-5" />
                 マップ
               </div>
+            
             </button>
           </div>
         </div>
@@ -150,8 +155,11 @@ export default function Home() {
           />
         ) : (
           <div className="bg-white rounded-2xl p-8 text-center">
-            <MapIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">マップ表示は準備中です</p>
+            {/* <MapIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" /> */}
+            {/* <p className="text-gray-500">マップ表示は準備中です</p> */}
+
+            <Mapmain />
+
           </div>
         )}
       </div>
