@@ -40,6 +40,9 @@ export default function Mapmain() {
   const initMap = () => {
     if (!mapRef.current) return;
 
+
+    
+
     const mapInstance = new google.maps.Map(mapRef.current, {
       zoom: 13,
       center: { lat: 35.0116, lng: 135.7681 }, 
@@ -56,14 +59,44 @@ export default function Mapmain() {
           const userPos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
           setUserLatLng(userPos);
 
+          // new google.maps.Marker({
+          //   position: userPos,
+          //   map: mapInstance,
+          //   title: "現在地",
+          //   icon: {
+          //       url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+          //   },
+          // });
+
+
+          function setCurrentLocationMaker(map: google.maps.Map, position: google.maps.LatLng) {
           new google.maps.Marker({
-            position: userPos,
-            map: mapInstance,
+            position: position,
+            map: map,
             title: "現在地",
             icon: {
-                url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-            },
-          });
+              path: google.maps.SymbolPath.CIRCLE,
+              fillColor: '#115EC3',
+              fillOpacity: 1,
+              strokeColor: 'white',
+              strokeWeight: 2,
+              scale: 7
+            }, 
+        });
+
+        new google.maps.Circle({
+          strokeColor: '#115EC3',
+          strokeOpacity: 0.2,
+          strokeWeight: 1,
+          fillColor: '#115EC3',
+          fillOpacity: 0.2,
+          map: map,
+          center: position,
+          radius: 100
+      });   
+    }
+
+          setCurrentLocationMaker(mapInstance, userPos);
 
           mapInstance.setCenter(userPos);
         },
