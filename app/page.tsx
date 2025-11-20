@@ -6,7 +6,8 @@ import { Header } from '@/components/Header';
 import { SalonList } from '@/components/home/SalonList';
 import { FilterModal } from '@/components/home/FilterModal';
 import { AREAS } from '@/constants/data';
-import { MOCK_SALONS } from '@/constants/salondata';
+import { getSalonData } from '@/lib/supabase_client';
+import { Salon } from '@/types/salon';
 import { Search, Filter, List, MapPin as MapIcon } from 'lucide-react';
 
 //map系
@@ -20,6 +21,9 @@ export default function Home() {
   const [selectedMenus, setSelectedMenus] = useState<string[]>([]);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [salons, setSalons] = useState<Salon[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [filteredSalons, setFilteredSalons] = useState<Salon[]>([]);
 
   // モーダル展開時、バックのスクロール防止
   useEffect(() => {
@@ -39,6 +43,54 @@ export default function Home() {
       document.body.style.width = '';
     };
   }, [showFilterModal]);
+
+  // フィルタリングロジック
+  useEffect(() => {
+    const fetchSalons = async () => {
+      setIsLoading(true);
+      const data = await getSalonData();
+
+      setSalons(data.processedData || []);
+      setIsLoading(false);
+    };
+
+    fetchSalons();
+  }, []);
+
+  useEffect(() => {
+    if (isLoading || salons.length === 0) {
+      if(!isLoading){
+        setFilteredSalons([]);
+      }
+      return;
+    }
+
+    const results = salons.filter(salon => {
+      if (selectedAreas.length > 0 && !selectedAreas.includes(salon.location)) {
+        return false;
+      }
+
+      if (selectedMenus.length > 0) {
+        const hasMenu = salon.tags.some((tag: string) => selectedMenus.includes(tag));
+        if (!hasMenu) return false;
+      }
+
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        if (
+          !salon.name.toLowerCase().includes(query) &&
+          !salon.location.toLowerCase().includes(query)
+        ){
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    setFilteredSalons(results);
+
+  },[salons , selectedAreas , selectedMenus , searchQuery , isLoading]);
 
   const toggleMenuSelection = (item: string) => {
     setSelectedMenus(prev =>
@@ -66,26 +118,6 @@ export default function Home() {
     setSelectedAreas([]);
     setSelectedMenus([]);
   };
-
-  // フィルタリングロジック
-  const filteredSalons = MOCK_SALONS.filter(salon => {
-    if (selectedAreas.length > 0 && !selectedAreas.includes(salon.location)) {
-      return false;
-    }
-
-    if (selectedMenus.length > 0) {
-      const hasMenu = salon.tags.some(tag => selectedMenus.includes(tag));
-      if (!hasMenu) return false;
-    }
-
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      return salon.name.toLowerCase().includes(query) ||
-        salon.location.toLowerCase().includes(query);
-    }
-
-    return true;
-  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-indigo-100">
