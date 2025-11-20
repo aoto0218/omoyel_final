@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
-import { SalonList } from '@/components/SalonList';
-import { FilterModal } from '@/components/FilterModal';
+import { SalonList } from '@/components/home/SalonList';
+import { FilterModal } from '@/components/home/FilterModal';
 import { AREAS } from '@/constants/data';
 import { MOCK_SALONS } from '@/constants/salondata';
 import { Search, Filter, List, MapPin as MapIcon } from 'lucide-react';

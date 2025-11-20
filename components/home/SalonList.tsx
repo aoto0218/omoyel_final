@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { SalonCard } from './SalonCard';
+import { SalonCard } from '@/components/home/SalonCard';
 import { Salon } from '@/types/salon';
 
 interface SalonListProps {

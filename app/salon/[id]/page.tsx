@@ -4,7 +4,7 @@
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { SalonImage } from '@/components/SalonImage';
+import { SalonImage } from '@/components/home/SalonImage';
 import { MOCK_SALONS } from '@/constants/salondata';
 
 export default function SalonDetailPage() {

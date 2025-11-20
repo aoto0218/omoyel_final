@@ -26,7 +26,7 @@ export const SalonCard: React.FC<SalonCardProps> = ({
             <SalonImage
                 type={salon.imageType}
                 alt={salon.name}
-                src={salon.images?.image1 || ''} 
+                src={salon.images?.image1 || ''}
             />
 
             <div className="p-5">
