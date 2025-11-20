@@ -1,1 +1,2 @@
-supabaseからデータを取得する際はpage.tsxのようにします
+supabaseからデータを取得する際はpage.tsxのように
+getSalonData関数を@/lib/supabase_clientからインポートする
