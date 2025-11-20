@@ -2,11 +2,8 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import Script from "next/script";
-// React Iconsのインポート (例としてFaCarを使用)
-import { FaCar } from 'react-icons/fa';
 
-// グローバルなgoogle.mapsオブジェクトがTypeScriptで認識されるように型を拡張
-declare const google: any;
+/// <reference types="google.maps" />
 
 type Location = { name: string; lat: number; lng: number };
 
@@ -16,11 +13,8 @@ export default function Mapmain() {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [userLatLng, setUserLatLng] = useState<google.maps.LatLng | null>(null);
 
-  // Directions API関連のステート/参照
   const directionsServiceRef = useRef<google.maps.DirectionsService | null>(null);
   const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
-
-  // ... (fetchLocations, initMap 関数は省略) ...
 
   const fetchLocations = async () => {
     try {
@@ -97,12 +91,9 @@ export default function Mapmain() {
     []
   );
 
-  // 4. マーカーとInfoWindowの描画 (locations, map, userLatLngの変更時)
   useEffect(() => {
     if (!map || !userLatLng || locations.length === 0) return;
 
-    // React IconsのFaCarをSVGタグの文字列に変換
-    // React Iconsの FaCar は <path d="M..." /> を含む SVG です
     const carIconSvg = `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M499.989 184.225l-71.554-136C423.771 34.02 408.832 24 392.593 24H119.407c-16.239 0-31.178 10.02-38.397 24.225l-71.554 136C2.302 192.834 0 200.758 0 208v200c0 22.091 17.909 40 40 40h20V488c0 13.255 10.745 24 24 24h64c13.255 0 24-10.745 24-24v-48h20c22.091 0 40-17.909 40-40V208c0-7.242-2.302-15.166-6.011-23.775zM292 456c0 4.418-3.582 8-8 8h-64c-4.418 0-8-3.582-8-8v-24h80v24zm-12-112H232v-32c0-13.255 10.745-24 24-24h16c13.255 0 24 10.745 24 24v32zm148 0H312v-32c0-39.761-32.239-72-72-72h-16c-39.761 0-72 32.239-72 72v32H72V207.828l61.637-117.113C135.253 87.202 143.088 88 144 88h224c.912 0 8.747-0.798 10.363 2.685L440 207.828V344zm-98.058-208l-23.235-47.38c-1.396-2.846-4.222-4.62-7.307-4.62h-58.8c-3.085 0-5.911 1.774-7.307 4.62L150.058 136h211.884z"/></svg>`;
     
     for (let i = 0; i < locations.length; i++) {
@@ -118,7 +109,6 @@ export default function Mapmain() {
         title: loc.name,
       });
 
-      // InfoWindowのコンテンツを修正
       const contentString = `
         <div style="color: black; font-family: sans-serif;">
           <strong>${loc.name}</strong><br>
@@ -149,7 +139,6 @@ export default function Mapmain() {
         content: contentString,
       });
 
-      // マーカークリック時の処理 (省略なし)
       marker.addListener("click", () => {
         infoWindow.open(map, marker);
         
