@@ -1,5 +1,3 @@
-// components/ActionButton.tsx
-
 import React from 'react';
 import { ActionButtonProps } from '@/types/salon';
 

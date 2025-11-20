@@ -1,5 +1,3 @@
-// components/Dropdown.tsx
-
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
 import { DropdownProps } from '@/types/salon';

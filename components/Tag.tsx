@@ -1,5 +1,3 @@
-// components/Tag.tsx
-
 import React from 'react';
 import { TagProps } from '@/types/salon';
 
