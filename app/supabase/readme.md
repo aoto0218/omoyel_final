@@ -1,0 +1,1 @@
+supabaseからデータを取得する際はpage.tsxのようにします
