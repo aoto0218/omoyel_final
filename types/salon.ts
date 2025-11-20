@@ -47,6 +47,7 @@ export interface Salon {
     customerGenderRatio: string;
     customerAgeGroup: string;
     internationalCustomerFrequency: string;
+    featured?: boolean;
 }
 
 export interface DropdownProps {
