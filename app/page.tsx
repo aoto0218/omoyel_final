@@ -1,31 +1,42 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useMemo } from 'react';
+
 import { Header } from '@/components/Header';
-import { SalonList } from '@/components/home/SalonList';
-import { FilterModal } from '@/components/home/FilterModal';
+
+import SearchBar from '@/components/filter/SearchBar';
+import SalonCard from '@/components/filter/SalonCard';
+import { FilterModal } from '@/components/filter/FilterModal';
+
 import { AREAS } from '@/constants/data';
+
 import { getSalonData } from '@/lib/supabase_client';
+
 import { Salon } from '@/types/salon';
-import { Search, Filter, List, MapPin as MapIcon } from 'lucide-react';
+
+import { Filter, List, MapPin as MapIcon } from 'lucide-react';
 
 //map系
 import Mapmain from '@/components/mapcomponents/mapmain';
 //map系
 
 export default function Home() {
-  const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
-  const [selectedMenus, setSelectedMenus] = useState<string[]>([]);
+  // フィルターモーダル表示管理
   const [showFilterModal, setShowFilterModal] = useState(false);
+  // 表示形式管理
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
-  const [salons, setSalons] = useState<Salon[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [filteredSalons, setFilteredSalons] = useState<Salon[]>([]);
+  // サロンデータ管理
+  const [allSalons,setAllSalons] = useState<Salon[]>([]);
+  // サロンデータ読み込み時管理
+  const [isLoading,setIsLoading] = useState(true);
+  // 検索バーフィルタリング用
+  const [searchQuery,setSearchQuery] = useState('');
+  // エリアフィルタリング用
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+  // メニューフィルタリング用
+  const [selectedMenus, setSelectedMenus] = useState<string[]>([]);
 
-  // モーダル展開時、バックのスクロール防止
+// モーダル展開時BGスクロール防止
   useEffect(() => {
     if (showFilterModal) {
       document.body.style.overflow = 'hidden';
@@ -44,54 +55,47 @@ export default function Home() {
     };
   }, [showFilterModal]);
 
-  // フィルタリングロジック
-  useEffect(() => {
-    const fetchSalons = async () => {
+  // サロンデータ取得
+  useEffect(()=>{
+    async function fetchData(){
       setIsLoading(true);
-      const data = await getSalonData();
-
-      setSalons(data.processedData || []);
-      setIsLoading(false);
-    };
-
-    fetchSalons();
-  }, []);
-
-  useEffect(() => {
-    if (isLoading || salons.length === 0) {
-      if(!isLoading){
-        setFilteredSalons([]);
+      const {salonData} =await getSalonData();
+      if (salonData){
+        setAllSalons(salonData as Salon[]);
       }
-      return;
+      setIsLoading(false);
+    }
+    fetchData();
+  },[]);
+
+  // フィルタリングロジック
+  const filteredSalons = useMemo(() => {
+    let results = allSalons;
+
+    if (searchQuery){
+      const lowerQuery = searchQuery.toLowerCase();
+      results=results.filter(salons =>
+        salons.name.toLowerCase().includes(lowerQuery)
+      );
     }
 
-    const results = salons.filter(salon => {
-      if (selectedAreas.length > 0 && !selectedAreas.includes(salon.location)) {
-        return false;
-      }
+    if (selectedAreas.length > 0){
+      results = results.filter(salon => salon.location && selectedAreas.includes(salon.location));
+    }
 
-      if (selectedMenus.length > 0) {
+    if(selectedMenus.length > 0){
+      results = results.filter(salon => {
         const hasMenu = salon.tags.some((tag: string) => selectedMenus.includes(tag));
-        if (!hasMenu) return false;
-      }
+        return hasMenu;
+      });
+    }
 
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        if (
-          !salon.name.toLowerCase().includes(query) &&
-          !salon.location.toLowerCase().includes(query)
-        ){
-          return false;
-        }
-      }
+    
+    return results;
+  },[allSalons,searchQuery,selectedAreas,selectedMenus]);
 
-      return true;
-    });
 
-    setFilteredSalons(results);
-
-  },[salons , selectedAreas , selectedMenus , searchQuery , isLoading]);
-
+  // フィルターモーダル関連のハンドラ
   const toggleMenuSelection = (item: string) => {
     setSelectedMenus(prev =>
       prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
@@ -100,14 +104,6 @@ export default function Home() {
 
   const handleAreaChange = (area: string) => {
     setSelectedAreas(area ? [area] : []);
-  };
-
-  const handleSalonVisit = (salonId: number) => {
-    router.push(`/salon/${salonId}`);
-  };
-
-  const handleConsult = (salonId: number) => {
-    console.log(`サロンID ${salonId} の相談`);
   };
 
   const applyFilters = () => {
@@ -119,6 +115,7 @@ export default function Home() {
     setSelectedMenus([]);
   };
 
+  
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-indigo-100">
       <Header />
@@ -127,16 +124,10 @@ export default function Home() {
       <div className="sticky top-0 z-40 pb-4">
         <div className="max-w-2xl mx-auto px-4 pt-4 space-y-3">
           <div className="flex gap-3">
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="店舗名で検索"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white rounded-lg pl-12 pr-4 py-3 text-gray-700 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 border border-gray-200"
-              />
-            </div>
+            <SearchBar
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+            />
             <button
               onClick={() => setShowFilterModal(true)}
               className="px-6 py-3 bg-white rounded-lg shadow-sm hover:shadow-md transition border border-gray-200 flex items-center gap-2"
@@ -180,11 +171,13 @@ export default function Home() {
       {/* サロン表示部 */}
       <div className="max-w-2xl mx-auto px-4 pt-6 pb-8">
         {viewMode === 'list' ? (
-          <SalonList
-            salons={filteredSalons}
-            onVisit={handleSalonVisit}
-            onConsult={handleConsult}
-          />
+          isLoading ? (
+            <div className="p-8">サロン情報を読み込み中</div>
+          ) : (
+            <SalonCard
+              salons={filteredSalons}
+            />
+          )
         ) : (
           <div className="bg-white rounded-2xl p-8 text-center">
             {/* <MapIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" /> */}
@@ -214,7 +207,8 @@ export default function Home() {
       {/* 相談ボタン部 */}
       {!showFilterModal && (
         <button
-          onClick={() => handleConsult(0)}
+
+          // ここにonClickハンドラを追加
           className="fixed bottom-6 right-6 bg-indigo-400 text-white px-6 py-3 rounded-full shadow-lg hover:bg-indigo-500 transition flex items-center gap-2 text-sm font-medium z-50"
         >
           マッチするサロンをAIに相談

@@ -10,12 +10,12 @@ const createClient = () => {
 const client = createClient();
 
 export const getSalonData = async () => {
-    const salonData = await client
+    const data = await client
         .from('salons')
         .select('*')
         .order('id', { ascending: true });
     
-    const processedData = salonData.data?.map((salon) => {
+    const salonData = data.data?.map((salon) => {
         let parsedImages = { image1: '', image2: '' };
 
         if (salon.images) {
@@ -31,5 +31,5 @@ export const getSalonData = async () => {
         };
     });
 
-    return { processedData };
+    return { salonData };
 };

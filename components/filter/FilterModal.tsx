@@ -3,7 +3,7 @@
 import React from 'react';
 import { Search, ArrowLeft } from 'lucide-react';
 
-interface FilterModalProps {
+type Props = {
     isOpen: boolean;
     onClose: () => void;
     searchQuery: string;
@@ -17,7 +17,7 @@ interface FilterModalProps {
     onApply: () => void;
 }
 
-export const FilterModal: React.FC<FilterModalProps> = ({
+export const FilterModal: React.FC<Props> = ({
     isOpen,
     onClose,
     searchQuery,
