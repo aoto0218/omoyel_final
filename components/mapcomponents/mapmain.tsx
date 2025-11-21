@@ -2,27 +2,24 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import Script from "next/script";
-// React Iconsのインポート (例としてFaCarを使用)
-import { FaCar, FaBus, FaWalking } from 'react-icons/fa';
-
-
-const carIconSvg = `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M499.989 184.225l-71.554-136C423.771 34.02 408.832 24 392.593 24H119.407c-16.239 0-31.178 10.02-38.397 24.225l-71.554 136C2.302 192.834 0 200.758 0 208v200c0 22.091 17.909 40 40 40h20V488c0 13.255 10.745 24 24 24h64c13.255 0 24-10.745 24-24v-48h20c22.091 0 40-17.909 40-40V208c0-7.242-2.302-15.166-6.011-23.775zM292 456c0 4.418-3.582 8-8 8h-64c-4.418 0-8-3.582-8-8v-24h80v24zm-12-112H232v-32c0-13.255 10.745-24 24-24h16c13.255 0 24 10.745 24 24v32zm148 0H312v-32c0-39.761-32.239-72-72-72h-16c-39.761 0-72 32.239-72 72v32H72V207.828l61.637-117.113C135.253 87.202 143.088 88 144 88h224c.912 0 8.747-0.798 10.363 2.685L440 207.828V344zm-98.058-208l-23.235-47.38c-1.396-2.846-4.222-4.62-7.307-4.62h-58.8c-3.085 0-5.911 1.774-7.307 4.62L150.058 136h211.884z"/></svg>`;
-
-// FaBusのSVG (例)
-const transitIconSvg = `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 640 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M416 384c-35.32 0-64 28.68-64 64s28.68 64 64 64 64-28.68 64-64-28.68-64-64-64zm-192-320c-35.32 0-64 28.68-64 64s28.68 64 64 64 64-28.68 64-64-28.68-64-64-64zm-32 320c-35.32 0-64 28.68-64 64s28.68 64 64 64 64-28.68 64-64-28.68-64-64-64zm384-256V88c0-13.255-10.745-24-24-24H276.104c-12.784 0-24.897 5.177-33.805 14.129L192 120H24c-13.255 0-24 10.745-24 24v208c0 13.255 10.745 24 24 24h32c0 53.056 42.944 96 96 96s96-42.944 96-96h128c0 53.056 42.944 96 96 96s96-42.944 96-96h32c13.255 0 24-10.745 24-24V192zM64 192h320v32H64v-32zm416 160h-32V160h32v192z"/></svg>`;
-
-// FaWalkingのSVG (例)
-const walkingIconSvg = `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M304 32c0 28.91-23.1 52.33-51.48 56C275.64 121.72 288 158.6 288 192c0 41.38-23.36 67.24-52.54 97.43C221.16 303.46 208 328.78 208 352c0 17.67 14.33 32 32 32h112c17.67 0 32-14.33 32-32s-14.33-32-32-32H256c-8.84 0-16-7.16-16-16 0-7.79 5.37-14.19 12.8-15.65C270.62 267.14 320 232.06 320 192c0-48.4-44.15-88-96-88-46.72 0-83.33 30.64-90.89 71.16C97.1 200.7 64 256.74 64 316.96 64 345.5 86.6 376 128 376h32c17.67 0 32-14.33 32-32s-14.33-32-32-32H133.58c-10.02-3.14-19.58-9.01-26.47-16.71C94.59 270.47 89 250.75 89 231.54 89 203.02 108.56 168.3 147.16 142.33 151.77 145.88 160 156.41 160 168.04c0 35.35-28.65 64-64 64-17.67 0-32 14.33-32 32s14.33 32 32 32h16c17.67 0 32-14.33 32-32s-14.33-32-32-32H144c-17.67 0-32-14.33-32-32s14.33-32 32-32h16c17.67 0 32-14.33 32-32s-14.33-32-32-32H160c-17.67 0-32-14.33-32-32s14.33-32 32-32h80c52.01 0 96-43.04 96-96z"/></svg>`;
+import { Salon } from '@/types/salon';
 
 /// <reference types="google.maps" />
 
 type Location = { name: string; lat: number; lng: number };
 
-export default function Mapmain() {
+type Props = {
+  salons: Salon[];
+};
+
+export default function Mapmain({ salons }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [locations, setLocations] = useState<Location[]>([]);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [userLatLng, setUserLatLng] = useState<google.maps.LatLng | null>(null);
+  console.log("salons in Mapmain:", salons);
+
+  const google_apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
   const directionsServiceRef = useRef<google.maps.DirectionsService | null>(null);
   const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
@@ -135,6 +132,52 @@ export default function Mapmain() {
     []
   );
 
+
+
+
+useEffect(() => {
+  if (!salons || salons.length === 0) return;
+
+  async function geocodeSalons() {
+    const geoLocations: Location[] = [];
+
+    for (const salon of salons) {
+      try {
+        const res = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+            salon.address
+          )}&key=${google_apiKey}`
+        );
+        if (!res.ok) {
+          console.error(`Geocode API error for ${salon.address}`);
+          continue;
+        }
+        const data = await res.json();
+       // geocodeSalons 内
+if (data.status === "OK" && data.results.length > 0) {
+  const loc = data.results[0].geometry.location;
+  geoLocations.push({ 
+    name: salon.name,  // 住所ではなくサロン名をセット
+    lat: loc.lat, 
+    lng: loc.lng 
+  });
+}
+else {
+          console.warn(`住所が見つかりません: ${salon.address}`);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    setLocations(geoLocations);
+    console.log("Geocoded locations:", geoLocations);
+  }
+
+  geocodeSalons();
+}, [salons]);
+
+
   useEffect(() => {
     if (!map || !userLatLng || locations.length === 0) return;
 
@@ -147,11 +190,18 @@ export default function Mapmain() {
       const distance = google.maps.geometry.spherical.computeDistanceBetween(userLatLng, spotLatLng);
       const distanceText = (distance / 1000).toFixed(2) + " km";
 
+      const lat = spotLatLng.lat();
+      const lng = spotLatLng.lng();
+
+      if (!map || !userLatLng || locations.length === 0) return;
+
+
       const marker = new google.maps.Marker({
-        position: spotLatLng,
+        position: { lat: lat, lng: lng },
         map,
         title: loc.name,
       });
+      console.log("Marker for:", loc.name, spotLatLng.lat(), spotLatLng.lng());
 
      
       const contentString = `
@@ -160,7 +210,7 @@ export default function Mapmain() {
 
   <!-- タイトル（× と高さを合わせるため margin を調整） -->
   <div style="font-size: 18px; font-weight: bold; margin: 0 0 8px 0;">
-    〇〇スポット
+  ${loc.name} 
   </div>
 
   <!-- 写真 -->
@@ -275,7 +325,11 @@ export default function Mapmain() {
   }, [locations, map, userLatLng, calculateAndDisplayRoute]);
 
 
-  const google_apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+
+
+
+  
 
   return (
     <>

@@ -183,7 +183,7 @@ export default function Home() {
             {/* <MapIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" /> */}
             {/* <p className="text-gray-500">マップ表示は準備中です</p> */}
 
-            <Mapmain />
+            <Mapmain salons={filteredSalons} />
 
           </div>
         )}
