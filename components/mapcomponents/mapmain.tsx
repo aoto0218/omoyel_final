@@ -153,36 +153,7 @@ export default function Mapmain() {
         title: loc.name,
       });
 
-<<<<<<< HEAD
-      const contentString = `
-        <div style="color: black; font-family: sans-serif;">
-          <strong>${loc.name}</strong><br>
-          現在地から: ${distanceText}<br><br>
-          <button 
-            id="routeButton-${i}" 
-            style="
-              display: inline-flex;
-              align-items: center;
-              gap: 5px;
-              background-color: #4285F4; 
-              color: white; 
-              border: none; 
-              padding: 5px 10px; 
-              border-radius: 4px;
-              cursor: pointer;
-              font-weight: bold;
-              font-size: 14px;
-            "
-          >
-            ${carIconSvg}
-            経路を表示
-          </button>
-        </div>
-      `;
-=======
-      
->>>>>>> feature/mapui
-
+     
       const contentString = `
 
       <div style="font-family: sans-serif; color: black; width: 240px; padding-top: 4px;">
@@ -287,10 +258,6 @@ export default function Mapmain() {
         content: contentString,
       });
 
-<<<<<<< HEAD
-=======
-     
->>>>>>> feature/mapui
       marker.addListener("click", () => {
         infoWindow.open(map, marker);
         
