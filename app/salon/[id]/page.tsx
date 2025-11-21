@@ -1,18 +1,41 @@
-// app/salon/[id]/page.tsx
 'use client';
 
-import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { SalonImage } from '@/components/home/SalonImage';
-import { MOCK_SALONS } from '@/constants/salondata';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { getSalonData } from '@/lib/supabase_client'
+import { Salon } from '@/types/salon';
 
-export default function SalonDetailPage() {
+
+export default function Page() {
     const params = useParams();
     const router = useRouter();
     const salonId = Number(params.id);
 
-    const salon = MOCK_SALONS.find(s => s.id === salonId);
+    const [salon,setSalon] = useState<Salon | null>(null);
+    const [isLoading,setIsLoading] = useState(true);
+    
+    useEffect(() => {
+        const fetchSalon = async () => {
+            setIsLoading(true);
+            const data = await getSalonData();
+
+            setSalon(data.salonData?.find((s: Salon) => s.id === salonId) || null);
+            
+            setIsLoading(false);
+        };
+
+        fetchSalon();
+    }, [salonId]);
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <p className="text-gray-500">読み込み中</p>
+            </div>
+        );
+    }
 
     if (!salon) {
         return (
@@ -32,7 +55,6 @@ export default function SalonDetailPage() {
 
     return (
         <div className="min-h-screen bg-white">
-            {/* Header - Back Button */}
             <div className="px-4 py-4">
                 <button
                     onClick={() => router.back()}
@@ -43,30 +65,29 @@ export default function SalonDetailPage() {
                 </button>
             </div>
 
-            {/* Main Content */}
             <div className="max-w-3xl mx-auto px-4 pb-24">
-                {/* Salon Name */}
                 <h1 className="text-2xl font-bold text-gray-900 mb-6 leading-tight">
                     {salon.name}
                 </h1>
 
-                {/* Images Grid */}
                 <div className="grid grid-cols-2 gap-3 mb-6">
                     {salon.images?.image1 && (
                         <div className="rounded-xl overflow-hidden">
-                            <SalonImage
-                                type={salon.imageType}
-                                alt={`${salon.name} - 画像1`}
+                            <Image
+                                alt='画像1'
                                 src={salon.images.image1}
+                                width={500}
+                                height={500}
                             />
                         </div>
                     )}
                     {salon.images?.image2 && (
                         <div className="rounded-xl overflow-hidden">
-                            <SalonImage
-                                type={salon.imageType}
-                                alt={`${salon.name} - 画像2`}
+                            <Image
+                                alt='画像2'
                                 src={salon.images.image2}
+                                width={500}
+                                height={500}
                             />
                         </div>
                     )}
