@@ -22,34 +22,3 @@ export interface Salon {
     internationalCustomerFrequency: string;
     featured?: boolean;
 }
-
-export interface DropdownProps {
-    label: string;
-    options: string[];
-    selected: string[];
-    onToggle: (option: string) => void;
-    isOpen: boolean;
-    onOpenChange: (open: boolean) => void;
-}
-
-export interface SearchBarProps {
-    value: string;
-    onChange: (value: string) => void;
-    placeholder: string;
-}
-
-export interface TagProps {
-    children: React.ReactNode;
-}
-
-export interface SalonCardProps {
-    salon: Salon;
-    onVisit?: (salonId: number) => void;
-    onConsult?: (salonId: number) => void;
-}
-
-export interface SalonImageProps {
-    type: 'canvas' | 'shell';
-    alt: string;
-    src: string;
-}
