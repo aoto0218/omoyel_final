@@ -188,12 +188,17 @@ export default function Mapmain({ salons }: Props) {
           const btn = document.getElementById(`routeButton-${i}`);
           const select = document.getElementById(`modeSelect-${i}`) as HTMLSelectElement;
           if (btn && select) {
+            // btn.addEventListener("click", () => {
+            //   const modeStr = select.value as keyof typeof google.maps.TravelMode;
+            //   const mode = google.maps.TravelMode[modeStr];
+            //   calculateAndDisplayRoute(userLatLng, spot, mode);
+            //   // info.close(); ← これをコメントアウト
+            // });
             btn.addEventListener("click", () => {
               const searchQuery = encodeURIComponent(loc.name); // サロン名を検索ワードに
               const url = `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
               window.open(url, "_blank"); // 新しいタブで開く
             });
-            
             
            
           }
