@@ -1,12 +1,10 @@
-// 完全高速化版 Mapmain.tsx
 "use client";
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import Script from "next/script";
-import { Salon } from '@/types/salon';
+import { Salon } from "@/types/salon";
 
 type Location = { name: string; lat: number; lng: number; images?: { image1?: string; image2?: string } };
-
 type Props = { salons: Salon[] };
 
 export default function Mapmain({ salons }: Props) {
@@ -19,15 +17,18 @@ export default function Mapmain({ salons }: Props) {
 
   const directionsServiceRef = useRef<google.maps.DirectionsService | null>(null);
   const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
+  const goalInfoRef = useRef<google.maps.InfoWindow | null>(null);
 
-  // ピン高速化：Promise.all で全件並列 geocode
+  // 全件 geocode
   async function geocodeSalons() {
-    const requests = salons.map(salon =>
+    const requests = salons.map((salon) =>
       fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(salon.address)}&key=${google_apiKey}`
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+          salon.address
+        )}&key=${google_apiKey}`
       )
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           if (data.status === "OK" && data.results.length > 0) {
             const pos = data.results[0].geometry.location;
             return { name: salon.name, lat: pos.lat, lng: pos.lng } as Location;
@@ -37,7 +38,7 @@ export default function Mapmain({ salons }: Props) {
     );
 
     const results = await Promise.all(requests);
-    const valid = results.filter(v => v !== null) as Location[];
+    const valid = results.filter((v) => v !== null) as Location[];
     setLocations(valid);
   }
 
@@ -60,7 +61,7 @@ export default function Mapmain({ salons }: Props) {
     directionsRendererRef.current = new google.maps.DirectionsRenderer({ map: mapInstance });
 
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(pos => {
+      navigator.geolocation.getCurrentPosition((pos) => {
         const userPos = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
         setUserLatLng(userPos);
 
@@ -70,23 +71,23 @@ export default function Mapmain({ salons }: Props) {
           title: "現在地",
           icon: {
             path: google.maps.SymbolPath.CIRCLE,
-            fillColor: '#115EC3',
+            fillColor: "#115EC3",
             fillOpacity: 1,
-            strokeColor: 'white',
+            strokeColor: "white",
             strokeWeight: 2,
-            scale: 7
-          }
+            scale: 7,
+          },
         });
 
         new google.maps.Circle({
-          strokeColor: '#115EC3',
+          strokeColor: "#115EC3",
           strokeOpacity: 0.2,
           strokeWeight: 1,
-          fillColor: '#115EC3',
+          fillColor: "#115EC3",
           fillOpacity: 0.2,
           map: mapInstance,
           center: userPos,
-          radius: 100
+          radius: 100,
         });
 
         mapInstance.setCenter(userPos);
@@ -94,18 +95,56 @@ export default function Mapmain({ salons }: Props) {
     }
   };
 
-  const calculateAndDisplayRoute = useCallback((origin: google.maps.LatLng, destination: google.maps.LatLng) => {
-    if (!directionsServiceRef.current || !directionsRendererRef.current) return;
+  const calculateAndDisplayRoute = useCallback(
+    (
+      origin: google.maps.LatLng,
+      destination: google.maps.LatLng,
+      mode: google.maps.TravelMode
+    ) => {
+      if (!directionsServiceRef.current || !directionsRendererRef.current) return;
 
-    directionsServiceRef.current.route({
-      origin,
-      destination,
-      travelMode: google.maps.TravelMode.DRIVING,
-    }, (res, status) => {
-      if (status === "OK") directionsRendererRef.current!.setDirections(res);
-      else alert("経路が見つかりません: " + status);
-    });
-  }, []);
+      directionsServiceRef.current.route(
+        {
+          origin,
+          destination,
+          travelMode: mode,
+          transitOptions: { departureTime: new Date() },
+        },
+        (result, status) => {
+          if (status === "OK" && result) {
+            directionsRendererRef.current!.setDirections(result);
+
+            // ゴールまでの時間を取得
+            const leg = result.routes[0].legs[0];
+            const totalDurationText = leg.duration?.text || "";
+
+            // 既存の InfoWindow を消す
+            if (goalInfoRef.current) goalInfoRef.current.close();
+
+            goalInfoRef.current = new google.maps.InfoWindow({
+              content: `
+                <div style="
+                  font-weight: bold; 
+                  background-color: #115EC3; /* 青い背景 */
+                  color: white;              /* 白文字 */
+                  padding: 6px 10px;
+                  border-radius: 4px;
+                ">
+                  所要時間: ${totalDurationText}
+                </div>
+              `,
+              position: destination,
+            });
+            goalInfoRef.current.open(map);
+            
+          } else {
+            alert("経路が見つかりません: " + status);
+          }
+        }
+      );
+    },
+    [map]
+  );
 
   useEffect(() => {
     if (!map || !userLatLng || locations.length === 0) return;
@@ -120,12 +159,25 @@ export default function Mapmain({ salons }: Props) {
       });
 
       const content = `
-        <div style="font-family: sans-serif; color: black; width: 240px; padding-top: 4px;">
-          <div style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">${loc.name}</div>
-          <div style="width: 100%; height:120px; background:#ccc; border-radius:6px; margin-bottom:10px;"></div>
-          <button id="routeButton-${i}" style="padding:6px 10px; background:#4285F4; color:white; border:none; border-radius:4px; cursor:pointer; font-size:13px;">経路</button>
-        </div>
-      `;
+      <div style="font-family: sans-serif; color: black; width: 240px; padding-top: 4px;">
+        <div style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">${loc.name}</div>
+        
+        <img 
+          src="${loc.images?.image1 || '/fallback.png'}" 
+          style="width:100%; height:120px; object-fit:cover; border-radius:6px; margin-bottom:6px;"
+        >
+        
+        <select id="modeSelect-${i}" style="margin-bottom:6px;">
+          <option value="DRIVING">車</option>
+          <option value="WALKING">徒歩</option>
+          <option value="BICYCLING">自転車</option>
+          <option value="TRANSIT">電車</option>
+        </select>
+        
+        <button id="routeButton-${i}" style="padding:6px 10px; background:#4285F4; color:white; border:none; border-radius:4px; cursor:pointer; font-size:13px;">経路</button>
+      </div>
+    `;
+    
 
       const info = new google.maps.InfoWindow({ content });
 
@@ -134,17 +186,21 @@ export default function Mapmain({ salons }: Props) {
 
         google.maps.event.addListenerOnce(info, "domready", () => {
           const btn = document.getElementById(`routeButton-${i}`);
-          if (btn) btn.addEventListener("click", () => {
-            calculateAndDisplayRoute(userLatLng, spot);
-            info.close();
-          });
+          const select = document.getElementById(`modeSelect-${i}`) as HTMLSelectElement;
+          if (btn && select) {
+            btn.addEventListener("click", () => {
+              const searchQuery = encodeURIComponent(loc.name); // サロン名を検索ワードに
+              const url = `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
+              window.open(url, "_blank"); // 新しいタブで開く
+            });
+            
+            
+           
+          }
         });
       });
     });
   }, [locations, map, userLatLng, calculateAndDisplayRoute]);
-
-  
-
 
   return (
     <>
