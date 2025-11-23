@@ -1,34 +1,21 @@
-// app/page.tsx
-
 "use client";
 
 import { useState, useCallback } from 'react';
 import ReactMarkDown from 'react-markdown';
 
-/**
- * @title チャットUIコンポーネント
- */
 export default function ChatPage() {
-    // ユーザーの入力内容を保持するState
     const [input, setInput] = useState<string>('');
-    // Geminiからの回答を保持するState
     const [response, setResponse] = useState<string>('質問を入力してください...');
-    // 通信中かどうかを示すState
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
-    /**
-     * フォーム送信時の処理（APIコール）
-     */
     const handleSubmit = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         if (!input.trim() || isLoading) return;
 
-        // 状態をリセットし、ローディングを開始
         setResponse('');
         setIsLoading(true);
 
         try {
-            // 先ほど作成したAPIルート（/api/ai/route.ts）にリクエストを送信
             const res = await fetch('/api/ai', {
                 method: 'POST',
                 headers: {
@@ -40,10 +27,8 @@ export default function ChatPage() {
             const data = await res.json();
 
             if (res.ok) {
-                // 成功: Geminiからの回答を表示
                 setResponse(data.response);
             } else {
-                // 失敗: エラーメッセージを表示
                 setResponse(`エラーが発生しました: ${data.error || '不明なエラー'}`);
             }
         } catch (error) {
@@ -51,7 +36,7 @@ export default function ChatPage() {
             setResponse('サーバーとの通信に失敗しました。');
         } finally {
             setIsLoading(false);
-            setInput(''); // 入力フィールドをクリア
+            setInput(''); 
         }
     }, [input, isLoading]);
 
