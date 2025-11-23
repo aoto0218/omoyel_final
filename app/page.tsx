@@ -36,6 +36,8 @@ export default function Home() {
   // メニューフィルタリング用
   const [selectedMenus, setSelectedMenus] = useState<string[]>([]);
 
+  const [isMapReady, setIsMapReady] = useState(false);
+
 // モーダル展開時BGスクロール防止
   useEffect(() => {
     if (showFilterModal) {
@@ -140,7 +142,10 @@ export default function Home() {
           {/* 表示形式選択部 */}
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={() => setViewMode('list')}
+              onClick={() => {setViewMode('list');
+              setIsMapReady(false);
+  }
+            }
               className={`py-3 rounded-lg font-medium transition ${viewMode === 'list'
                 ? 'bg-white text-gray-900 shadow-md border-2 border-indigo-400'
                 : 'bg-white text-gray-600 shadow-sm border border-gray-200'
@@ -152,7 +157,12 @@ export default function Home() {
               </div>
             </button>
             <button
-              onClick={() => setViewMode('map')}
+              onClick={() => {
+              setViewMode('map');
+              setIsMapReady(true);
+              }
+            
+            }
               className={`py-3 rounded-lg font-medium transition ${viewMode === 'map'
                 ? 'bg-white text-gray-900 shadow-md border-2 border-indigo-400'
                 : 'bg-white text-gray-600 shadow-sm border border-gray-200'

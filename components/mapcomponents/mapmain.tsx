@@ -1,89 +1,81 @@
+// 完全高速化版 Mapmain.tsx
 "use client";
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import Script from "next/script";
 import { Salon } from '@/types/salon';
 
-/// <reference types="google.maps" />
+type Location = { name: string; lat: number; lng: number; images?: { image1?: string; image2?: string } };
 
-type Location = { name: string; lat: number; lng: number };
-
-type Props = {
-  salons: Salon[];
-};
+type Props = { salons: Salon[] };
 
 export default function Mapmain({ salons }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [locations, setLocations] = useState<Location[]>([]);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [userLatLng, setUserLatLng] = useState<google.maps.LatLng | null>(null);
-  console.log("salons in Mapmain:", salons);
 
   const google_apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
   const directionsServiceRef = useRef<google.maps.DirectionsService | null>(null);
   const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
 
-  const fetchLocations = async () => {
-    try {
-      const res = await fetch("/api/locations");
-      if (!res.ok) throw new Error("API取得失敗");
-      const data: Location[] = await res.json();
-      setLocations(data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  // ピン高速化：Promise.all で全件並列 geocode
+  async function geocodeSalons() {
+    const requests = salons.map(salon =>
+      fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(salon.address)}&key=${google_apiKey}`
+      )
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "OK" && data.results.length > 0) {
+            const pos = data.results[0].geometry.location;
+            return { name: salon.name, lat: pos.lat, lng: pos.lng } as Location;
+          }
+          return null;
+        })
+    );
+
+    const results = await Promise.all(requests);
+    const valid = results.filter(v => v !== null) as Location[];
+    setLocations(valid);
+  }
 
   useEffect(() => {
-    fetchLocations();
-  }, []);
+    if (salons.length > 0) geocodeSalons();
+  }, [salons]);
 
   const initMap = () => {
     if (!mapRef.current) return;
 
-
-    
-
     const mapInstance = new google.maps.Map(mapRef.current, {
       zoom: 13,
-      center: { lat: 35.0116, lng: 135.7681 }, 
+      center: { lat: 35.0116, lng: 135.7681 },
       mapTypeId: google.maps.MapTypeId.ROADMAP,
     });
+
     setMap(mapInstance);
-    
+
     directionsServiceRef.current = new google.maps.DirectionsService();
     directionsRendererRef.current = new google.maps.DirectionsRenderer({ map: mapInstance });
 
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userPos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-          setUserLatLng(userPos);
+      navigator.geolocation.getCurrentPosition(pos => {
+        const userPos = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+        setUserLatLng(userPos);
 
-          // new google.maps.Marker({
-          //   position: userPos,
-          //   map: mapInstance,
-          //   title: "現在地",
-          //   icon: {
-          //       url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-          //   },
-          // });
-
-
-          function setCurrentLocationMaker(map: google.maps.Map, position: google.maps.LatLng) {
-          new google.maps.Marker({
-            position: position,
-            map: map,
-            title: "現在地",
-            icon: {
-              path: google.maps.SymbolPath.CIRCLE,
-              fillColor: '#115EC3',
-              fillOpacity: 1,
-              strokeColor: 'white',
-              strokeWeight: 2,
-              scale: 7
-            }, 
+        new google.maps.Marker({
+          position: userPos,
+          map: mapInstance,
+          title: "現在地",
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            fillColor: '#115EC3',
+            fillOpacity: 1,
+            strokeColor: 'white',
+            strokeWeight: 2,
+            scale: 7
+          }
         });
 
         new google.maps.Circle({
@@ -92,244 +84,67 @@ export default function Mapmain({ salons }: Props) {
           strokeWeight: 1,
           fillColor: '#115EC3',
           fillOpacity: 0.2,
-          map: map,
-          center: position,
+          map: mapInstance,
+          center: userPos,
           radius: 100
-      });   
-    }
+        });
 
-          setCurrentLocationMaker(mapInstance, userPos);
-
-          mapInstance.setCenter(userPos);
-        },
-        (error) => console.error(error)
-      );
+        mapInstance.setCenter(userPos);
+      });
     }
   };
 
-  const calculateAndDisplayRoute = useCallback(
-    (
-      origin: google.maps.LatLng,
-      destination: google.maps.LatLng
-    ) => {
-        const directionsService = directionsServiceRef.current;
-        const directionsRenderer = directionsRendererRef.current;
+  const calculateAndDisplayRoute = useCallback((origin: google.maps.LatLng, destination: google.maps.LatLng) => {
+    if (!directionsServiceRef.current || !directionsRendererRef.current) return;
 
-        if (!directionsService || !directionsRenderer) return;
-
-        directionsService.route({
-            origin: origin,
-            destination: destination,
-            travelMode: google.maps.TravelMode.DRIVING
-        }, (response, status) => {
-            if (status === 'OK') {
-                directionsRenderer.setDirections(response);
-            } else {
-                window.alert('経路が見つかりませんでした: ' + status);
-            }
-        });
-    },
-    []
-  );
-
-
-
-
-useEffect(() => {
-  if (!salons || salons.length === 0) return;
-
-  async function geocodeSalons() {
-    const geoLocations: Location[] = [];
-
-    for (const salon of salons) {
-      try {
-        const res = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-            salon.address
-          )}&key=${google_apiKey}`
-        );
-        if (!res.ok) {
-          console.error(`Geocode API error for ${salon.address}`);
-          continue;
-        }
-        const data = await res.json();
-       // geocodeSalons 内
-if (data.status === "OK" && data.results.length > 0) {
-  const loc = data.results[0].geometry.location;
-  geoLocations.push({ 
-    name: salon.name,  // 住所ではなくサロン名をセット
-    lat: loc.lat, 
-    lng: loc.lng 
-  });
-}
-else {
-          console.warn(`住所が見つかりません: ${salon.address}`);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    setLocations(geoLocations);
-    console.log("Geocoded locations:", geoLocations);
-  }
-
-  geocodeSalons();
-}, [salons]);
-
+    directionsServiceRef.current.route({
+      origin,
+      destination,
+      travelMode: google.maps.TravelMode.DRIVING,
+    }, (res, status) => {
+      if (status === "OK") directionsRendererRef.current!.setDirections(res);
+      else alert("経路が見つかりません: " + status);
+    });
+  }, []);
 
   useEffect(() => {
     if (!map || !userLatLng || locations.length === 0) return;
 
-    const carIconSvg = `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M499.989 184.225l-71.554-136C423.771 34.02 408.832 24 392.593 24H119.407c-16.239 0-31.178 10.02-38.397 24.225l-71.554 136C2.302 192.834 0 200.758 0 208v200c0 22.091 17.909 40 40 40h20V488c0 13.255 10.745 24 24 24h64c13.255 0 24-10.745 24-24v-48h20c22.091 0 40-17.909 40-40V208c0-7.242-2.302-15.166-6.011-23.775zM292 456c0 4.418-3.582 8-8 8h-64c-4.418 0-8-3.582-8-8v-24h80v24zm-12-112H232v-32c0-13.255 10.745-24 24-24h16c13.255 0 24 10.745 24 24v32zm148 0H312v-32c0-39.761-32.239-72-72-72h-16c-39.761 0-72 32.239-72 72v32H72V207.828l61.637-117.113C135.253 87.202 143.088 88 144 88h224c.912 0 8.747-0.798 10.363 2.685L440 207.828V344zm-98.058-208l-23.235-47.38c-1.396-2.846-4.222-4.62-7.307-4.62h-58.8c-3.085 0-5.911 1.774-7.307 4.62L150.058 136h211.884z"/></svg>`;
-    
-    for (let i = 0; i < locations.length; i++) {
-      const loc = locations[i];
-      const spotLatLng = new google.maps.LatLng(loc.lat, loc.lng);
-      
-      const distance = google.maps.geometry.spherical.computeDistanceBetween(userLatLng, spotLatLng);
-      const distanceText = (distance / 1000).toFixed(2) + " km";
-
-      const lat = spotLatLng.lat();
-      const lng = spotLatLng.lng();
-
-      if (!map || !userLatLng || locations.length === 0) return;
-
+    locations.forEach((loc, i) => {
+      const spot = new google.maps.LatLng(loc.lat, loc.lng);
 
       const marker = new google.maps.Marker({
-        position: { lat: lat, lng: lng },
+        position: spot,
         map,
         title: loc.name,
       });
-      console.log("Marker for:", loc.name, spotLatLng.lat(), spotLatLng.lng());
 
-     
-      const contentString = `
+      const content = `
+        <div style="font-family: sans-serif; color: black; width: 240px; padding-top: 4px;">
+          <div style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">${loc.name}</div>
+          <div style="width: 100%; height:120px; background:#ccc; border-radius:6px; margin-bottom:10px;"></div>
+          <button id="routeButton-${i}" style="padding:6px 10px; background:#4285F4; color:white; border:none; border-radius:4px; cursor:pointer; font-size:13px;">経路</button>
+        </div>
+      `;
 
-      <div style="font-family: sans-serif; color: black; width: 240px; padding-top: 4px;">
-
-  <!-- タイトル（× と高さを合わせるため margin を調整） -->
-  <div style="font-size: 18px; font-weight: bold; margin: 0 0 8px 0;">
-  ${loc.name} 
-  </div>
-
-  <!-- 写真 -->
-  <div
-  id="spot-photo"
-  style="
-    width: 100%;
-    height: 120px;
-    background-image: url('/salon8-1.png');
-    background-size: cover;
-    background-position: center;
-    border-radius: 6px;
-    margin-bottom: 10px;
-  "
-></div>
-
-  <!-- 星 + 経路ボタン -->
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-    <div style="font-size: 12px; color: #777;">
-      ★★★★☆
-    </div>
-
-    <button
-      id="open-route-select"
-      style="
-        padding: 6px 10px;
-        background: #4285F4;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: bold;
-      "
-    >
-      経路
-    </button>
-  </div>
-
-  <!-- 手段UI（非表示） -->
-  <div id="route-options" style="display: none; margin-top: 8px;">
-    <button
-      style="
-        width: 100%;
-        padding: 8px;
-        background: #4285F4;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 13px;
-        margin-bottom: 6px;
-      "
-      data-mode="DRIVING"
-    >🚗 車で行く</button>
-
-    <button
-      style="
-        width: 100%;
-        padding: 8px;
-        background: #f4b400;
-        color: black;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 13px;
-        margin-bottom: 6px;
-      "
-      data-mode="TRANSIT"
-    >🚉 公共交通機関</button>
-
-    <button
-      style="
-        width: 100%;
-        padding: 8px;
-        background: #0F9D58;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 13px;
-      "
-      data-mode="WALKING"
-    >🚶 徒歩</button>
-  </div>
-
-</div>
-
-
-    `;
-
-
-    //マーカの詳細
-      const infoWindow = new google.maps.InfoWindow({
-        content: contentString,
-      });
+      const info = new google.maps.InfoWindow({ content });
 
       marker.addListener("click", () => {
-        infoWindow.open(map, marker);
-        
-        google.maps.event.addListener(infoWindow, 'domready', () => {
-          const routeButton = document.getElementById(`routeButton-${i}`);
-          if (routeButton) {
-            routeButton.addEventListener('click', () => {
-              calculateAndDisplayRoute(userLatLng, spotLatLng);
-              infoWindow.close();
-            });
-          }
+        info.open(map, marker);
+
+        google.maps.event.addListenerOnce(info, "domready", () => {
+          const btn = document.getElementById(`routeButton-${i}`);
+          if (btn) btn.addEventListener("click", () => {
+            calculateAndDisplayRoute(userLatLng, spot);
+            info.close();
+          });
         });
       });
-    }
+    });
   }, [locations, map, userLatLng, calculateAndDisplayRoute]);
 
-
-
-
-
-
   
+
 
   return (
     <>
@@ -338,8 +153,6 @@ else {
         strategy="afterInteractive"
         onLoad={initMap}
       />
-
-      
       <div ref={mapRef} style={{ width: "100%", height: "50vh" }} />
     </>
   );
