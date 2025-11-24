@@ -2,12 +2,15 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import Script from "next/script";
-import { Salon } from "@/types/salon";
-
+import { Salon } from "@/types/salon";import { forwardRef, useImperativeHandle } from "react";
 type Location = { name: string; lat: number; lng: number; images?: { image1?: string; image2?: string } };
 type Props = { salons: Salon[] };
 
-export default function Mapmain({ salons }: Props) {
+export type ChildHandle = {
+  initMapFromParent: () => void;
+};
+
+const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [locations, setLocations] = useState<Location[]>([]);
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -47,6 +50,7 @@ export default function Mapmain({ salons }: Props) {
   }, [salons]);
 
   const initMap = () => {
+    if (!window.google) return;
     if (!mapRef.current) return;
 
     const mapInstance = new google.maps.Map(mapRef.current, {
@@ -207,6 +211,14 @@ export default function Mapmain({ salons }: Props) {
     });
   }, [locations, map, userLatLng, calculateAndDisplayRoute]);
 
+  useImperativeHandle(ref, () => ({
+    initMapFromParent: () => {
+     
+      initMap();
+    },
+  }));
+  
+   
   return (
     <>
       <Script
@@ -217,4 +229,6 @@ export default function Mapmain({ salons }: Props) {
       <div ref={mapRef} style={{ width: "100%", height: "50vh" }} />
     </>
   );
-}
+ 
+})
+export default Mapmain;

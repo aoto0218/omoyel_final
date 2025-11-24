@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo ,useRef } from 'react';
+import Mapmain, { ChildHandle } from "@/components/mapcomponents/mapmain";
 
 import { Header } from '@/components/Header';
 
@@ -17,8 +18,7 @@ import { Salon } from '@/types/salon';
 import { Filter, List, MapPin as MapIcon } from 'lucide-react';
 
 //map系
-import Mapmain from '@/components/mapcomponents/mapmain';
-//map系
+
 
 export default function Home() {
   // フィルターモーダル表示管理
@@ -37,7 +37,7 @@ export default function Home() {
   const [selectedMenus, setSelectedMenus] = useState<string[]>([]);
 
   const [isMapReady, setIsMapReady] = useState(false);
-
+  const childRef = useRef<ChildHandle>(null);
 // モーダル展開時BGスクロール防止
   useEffect(() => {
     if (showFilterModal) {
@@ -117,6 +117,7 @@ export default function Home() {
     setSelectedMenus([]);
   };
 
+ 
   
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-indigo-100">
@@ -139,11 +140,14 @@ export default function Home() {
             </button>
           </div>
 
+
+
+       
           {/* 表示形式選択部 */}
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => {setViewMode('list');
-              setIsMapReady(false);
+              
   }
             }
               className={`py-3 rounded-lg font-medium transition ${viewMode === 'list'
@@ -157,23 +161,26 @@ export default function Home() {
               </div>
             </button>
             <button
-              onClick={() => {
-              setViewMode('map');
-              setIsMapReady(true);
-              }
-            
-            }
-              className={`py-3 rounded-lg font-medium transition ${viewMode === 'map'
-                ? 'bg-white text-gray-900 shadow-md border-2 border-indigo-400'
-                : 'bg-white text-gray-600 shadow-sm border border-gray-200'
-                }`}
-            >
-              <div className="flex items-center justify-center gap-2">
-                <MapIcon className="w-5 h-5" />
-                マップ
-              </div>
-            
-            </button>
+  onClick={() => {
+   
+
+    setViewMode('map');             // ① 表示切り替え
+    setTimeout(() => {
+      childRef.current?.initMapFromParent();  // ② 子の関数を呼ぶ（描画後）
+    }, 0);
+  }}
+  className={`py-3 rounded-lg font-medium transition ${
+    viewMode === 'map'
+      ? 'bg-white text-gray-900 shadow-md border-2 border-indigo-400'
+      : 'bg-white text-gray-600 shadow-sm border border-gray-200'
+  }`}
+>
+  <div className="flex items-center justify-center gap-2">
+    <MapIcon className="w-5 h-5" />
+    マップ
+  </div>
+</button>
+
           </div>
         </div>
       </div>
@@ -190,12 +197,11 @@ export default function Home() {
           )
         ) : (
           <div className="bg-white rounded-2xl p-8 text-center">
-            {/* <MapIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" /> */}
-            {/* <p className="text-gray-500">マップ表示は準備中です</p> */}
-
-            <Mapmain salons={filteredSalons} />
-
+          <div style={{ display: viewMode === "map" ? "block" : "none" }}>
+            <Mapmain salons={filteredSalons} ref={childRef} />
           </div>
+        </div>
+        
         )}
       </div>
 
