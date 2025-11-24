@@ -3,7 +3,14 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import Script from "next/script";
 import { Salon } from "@/types/salon";import { forwardRef, useImperativeHandle } from "react";
-type Location = { name: string; lat: number; lng: number; images?: { image1?: string; image2?: string } };
+type Location = {
+  id: number;
+  name: string;
+  lat: number;
+  lng: number;
+  images?: { image1?: string; image2?: string };
+};
+
 type Props = { salons: Salon[] };
 
 export type ChildHandle = {
@@ -11,6 +18,7 @@ export type ChildHandle = {
 };
 
 const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) => {
+  
   const mapRef = useRef<HTMLDivElement>(null);
   const [locations, setLocations] = useState<Location[]>([]);
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -21,7 +29,7 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
   const directionsServiceRef = useRef<google.maps.DirectionsService | null>(null);
   const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
   const goalInfoRef = useRef<google.maps.InfoWindow | null>(null);
-
+console.log("salons in mapmain:", salons);
   // 全件 geocode
   async function geocodeSalons() {
     const requests = salons.map((salon) =>
@@ -34,7 +42,14 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
         .then((data) => {
           if (data.status === "OK" && data.results.length > 0) {
             const pos = data.results[0].geometry.location;
-            return { name: salon.name, lat: pos.lat, lng: pos.lng } as Location;
+            return { 
+              id: salon.id,          // ← 必須
+              name: salon.name, 
+              lat: pos.lat, 
+              lng: pos.lng,
+              image1: salon.images?.image1 || "/fallback.png",
+            } as Location;
+            
           }
           return null;
         })
@@ -163,23 +178,28 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
       });
 
       const content = `
-      <div style="font-family: sans-serif; color: black; width: 240px; padding-top: 4px;">
-        <div style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">${loc.name}</div>
-        
-        <img 
-          src="${loc.images?.image1 || '/fallback.png'}" 
-          style="width:100%; height:120px; object-fit:cover; border-radius:6px; margin-bottom:6px;"
-        >
-        
-        <select id="modeSelect-${i}" style="margin-bottom:6px;">
-          <option value="DRIVING">車</option>
-          <option value="WALKING">徒歩</option>
-          <option value="BICYCLING">自転車</option>
-          <option value="TRANSIT">電車</option>
-        </select>
-        
-        <button id="routeButton-${i}" style="padding:6px 10px; background:#4285F4; color:white; border:none; border-radius:4px; cursor:pointer; font-size:13px;">経路</button>
-      </div>
+      <a href="/salon/${loc.id}">
+        <div style="font-family: sans-serif; color: black; width: 240px; padding-top: 4px;">
+          <div style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">${loc.name}</div>
+    
+          <img 
+            src="${loc.images?.image1 || '/fallback.png'}" 
+            style="width:100%; height:120px; object-fit:cover; border-radius:6px; margin-bottom:6px;"
+          >
+    
+          <select id="modeSelect-${i}" style="margin-bottom:6px;">
+            <option value="DRIVING">車</option>
+            <option value="WALKING">徒歩</option>
+            <option value="BICYCLING">自転車</option>
+            <option value="TRANSIT">電車</option>
+          </select>
+    
+          <button id="routeButton-${i}" 
+            style="padding:6px 10px; background:#4285F4; color:white; border:none; border-radius:4px; cursor:pointer; font-size:13px;">
+            経路
+          </button>
+        </div>
+      </a>
     `;
     
 
@@ -192,17 +212,17 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
           const btn = document.getElementById(`routeButton-${i}`);
           const select = document.getElementById(`modeSelect-${i}`) as HTMLSelectElement;
           if (btn && select) {
-            // btn.addEventListener("click", () => {
-            //   const modeStr = select.value as keyof typeof google.maps.TravelMode;
-            //   const mode = google.maps.TravelMode[modeStr];
-            //   calculateAndDisplayRoute(userLatLng, spot, mode);
-            //   // info.close(); ← これをコメントアウト
-            // });
             btn.addEventListener("click", () => {
-              const searchQuery = encodeURIComponent(loc.name); // サロン名を検索ワードに
-              const url = `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
-              window.open(url, "_blank"); // 新しいタブで開く
+              const modeStr = select.value as keyof typeof google.maps.TravelMode;
+              const mode = google.maps.TravelMode[modeStr];
+              calculateAndDisplayRoute(userLatLng, spot, mode);
+              // info.close(); ← これをコメントアウト
             });
+            // btn.addEventListener("click", () => {
+            //   const searchQuery = encodeURIComponent(loc.name); // サロン名を検索ワードに
+            //   const url = `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
+            //   window.open(url, "_blank"); // 新しいタブで開く
+            // });
             
            
           }
