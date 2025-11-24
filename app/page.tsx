@@ -9,8 +9,6 @@ import SearchBar from '@/components/filter/SearchBar';
 import SalonCard from '@/components/filter/SalonCard';
 import { FilterModal } from '@/components/filter/FilterModal';
 
-import { AREAS } from '@/constants/data';
-
 import { getSalonData } from '@/lib/supabase_client';
 
 import { Salon } from '@/types/salon';
@@ -18,7 +16,13 @@ import { Salon } from '@/types/salon';
 import { Filter, List, MapPin as MapIcon } from 'lucide-react';
 import Link from 'next/link';
 
-//map系
+
+const AREAS = [
+    '北海道', '茨城県', '栃木県', '埼玉県', '千葉県',
+    '東京都', '神奈川県', '岐阜県', '愛知県', '京都府',
+    '大阪府', '兵庫県', '奈良県', '和歌山県', '岡山県',
+    '広島県', '愛媛県', '高知県', '福岡県', '海外'
+];
 
 
 export default function Home() {
