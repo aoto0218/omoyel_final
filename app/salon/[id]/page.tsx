@@ -61,7 +61,7 @@ export default function Page() {
                     className="flex items-center gap-1 text-indigo-500 hover:text-indigo-600 transition text-sm"
                 >
                     <ArrowLeft className="w-4 h-4" />
-                    ホームに戻る
+                    戻る
                 </button>
             </div>
 
