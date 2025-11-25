@@ -12,7 +12,7 @@ import CompanySalary from '@/components/info/CompanySalary';
 import CompanyBenefits from '@/components/info/CompanyBenefits';
 import CompanyLesson from '@/components/info/CompanyLesson';
 
-type TabType = 'basic' | 'salon' | 'company' | 'salary' | 'benefits' | 'lesson';
+type TabType = 'basic' | 'salon' | 'company' | 'salary' | 'benefits' | 'lesson' | 'review';
 
 export default function Page() {
     const params = useParams();
@@ -74,6 +74,7 @@ export default function Page() {
         { id: 'salary' as TabType, label: '給与・待遇' },
         { id: 'benefits' as TabType, label: '福利厚生・休暇' },
         { id: 'lesson' as TabType, label: '働き方・教育' },
+        { id: 'review' as TabType, label: 'レビュー・口コミ' },
     ];
 
     return (
@@ -126,6 +127,11 @@ export default function Page() {
                     {activeTab === 'salary' && company && <CompanySalary company={company} />}
                     {activeTab === 'benefits' && company && <CompanyBenefits company={company} />}
                     {activeTab === 'lesson' && company && <CompanyLesson company={company} />}
+                    {activeTab === 'review' && (
+                        <div className="py-8">
+                            <p className="text-gray-500 text-center">レビュー・口コミは現在準備中です。</p>
+                        </div>
+                    )}
                 </div>
             </div>
 
