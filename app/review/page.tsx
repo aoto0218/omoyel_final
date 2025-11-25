@@ -1,5 +1,6 @@
 "use client"
 import { useState } from "react"
+import MainReview from "@/components/reviewcomponents/mainreview"
 
 export default function ReviewForm() {
   const [salonId, setSalonId] = useState("")
@@ -42,7 +43,9 @@ export default function ReviewForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg space-y-4">
+
+    <>
+     <form onSubmit={handleSubmit} className="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg space-y-4">
       <input
         value={salonId}
         onChange={e => setSalonId(e.target.value)}
@@ -100,5 +103,11 @@ export default function ReviewForm() {
         レビュー登録
       </button>
     </form>
+
+    <MainReview />
+    </>
+   
+
   )
+  
 }

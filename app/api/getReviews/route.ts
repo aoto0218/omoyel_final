@@ -1,3 +1,4 @@
+// app/api/getReviews/route.ts
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -15,12 +16,15 @@ type Review = {
 export async function GET() {
   const supabase = await createClient();
 
-  // SELECT のみ → 第二引数 never だけでOK
   const { data: reviews, error } = await supabase
-    .from<any, never>("review")
+    .from("review")
     .select("*");
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("Supabase error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
-  return NextResponse.json({ reviews });
+  // data が null や undefined の場合に空配列を返す
+  return NextResponse.json({ reviews: reviews ?? [] });
 }
