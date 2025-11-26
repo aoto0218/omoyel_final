@@ -77,11 +77,9 @@ export default function SalonCard({ salons }: Props) {
                         <div className="p-5">
                             <h3 className="text-xl font-bold text-gray-800 mb-2">{article.name}</h3>
 
-                            {/* --- ここに StarRating コンポーネントを追加 --- */}
                             <div className="mb-3">
                                 <StarRating rating={getRating(article)} reviewCount={getReviewCount(article)} />
                             </div>
-                            {/* ------------------------------------- */}
                             
                             <div className="flex items-center text-gray-500 text-sm mb-3">
                                 <MapPin className="w-4 h-4 mr-1" />

@@ -11,6 +11,7 @@ import CompanyBasicInfo from '@/components/info/CompanyBasicInfo';
 import CompanySalary from '@/components/info/CompanySalary';
 import CompanyBenefits from '@/components/info/CompanyBenefits';
 import CompanyLesson from '@/components/info/CompanyLesson';
+import CompanyReview from '@/components/info/CompanyReview';
 
 type TabType = 'basic' | 'salon' | 'company' | 'salary' | 'benefits' | 'lesson' | 'review';
 
@@ -127,11 +128,7 @@ export default function Page() {
                     {activeTab === 'salary' && company && <CompanySalary company={company} />}
                     {activeTab === 'benefits' && company && <CompanyBenefits company={company} />}
                     {activeTab === 'lesson' && company && <CompanyLesson company={company} />}
-                    {activeTab === 'review' && (
-                        <div className="py-8">
-                            <p className="text-gray-500 text-center">レビュー・口コミは現在準備中です。</p>
-                        </div>
-                    )}
+                    {activeTab === 'review' && company && <CompanyReview company={company} />}
                 </div>
             </div>
 
