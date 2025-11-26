@@ -1,26 +1,35 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
-type Review = {
-  id: number;
-  salon_id: number;
-  score_1: number;
-  score_2: number;
-  score_3: number;
-  score_4: number;
-  score_5: number;
-  comments: string;
-};
-
-export async function GET() {
+export async function POST(req: Request) {
   const supabase = await createClient();
+  const body = await req.json();
 
-  // SELECT のみ → 第二引数 never だけでOK
-  const { data: reviews, error } = await supabase
-    .from<any, never>("review")
-    .select("*");
+  const {
+    salon_id,
+    score_1,
+    score_2,
+    score_3,
+    score_4,
+    score_5,
+    comments,
+  } = body;
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const { error } = await supabase.from("review").insert([
+    {
+      salon_id,
+      score_1,
+      score_2,
+      score_3,
+      score_4,
+      score_5,
+      comments,
+    },
+  ]);
 
-  return NextResponse.json({ reviews });
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ message: "success" });
 }
