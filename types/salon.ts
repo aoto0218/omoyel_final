@@ -21,4 +21,6 @@ export interface Salon {
     customerAgeGroup: string;
     internationalCustomerFrequency: string;
     featured?: boolean;
+    lat: number;
+    lon: number;
 }
