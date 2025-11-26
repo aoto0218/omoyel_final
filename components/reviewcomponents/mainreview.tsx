@@ -38,7 +38,7 @@ export default function MainReview() {
   }, [salonId]);
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
+    <div className=" max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-6 text-gray-600">このサロンのレビュー</h1>
 
       {reviews.length ? (
@@ -76,7 +76,7 @@ export default function MainReview() {
           })}
         </div>
       ) : (
-        <p>レビューはまだありません</p>
+        <p className="text-gray-500" >レビューはまだありません</p>
       )}
     </div>
   );

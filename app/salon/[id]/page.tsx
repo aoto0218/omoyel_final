@@ -11,7 +11,9 @@ import CompanyBasicInfo from '@/components/info/CompanyBasicInfo';
 import CompanySalary from '@/components/info/CompanySalary';
 import CompanyBenefits from '@/components/info/CompanyBenefits';
 import CompanyLesson from '@/components/info/CompanyLesson';
-import Link from 'next/link';
+import Link from "next/link";
+import Button from "@mui/material/Button";
+import EditNoteIcon from '@mui/icons-material/EditNote';
 import MainReview from '@/components/reviewcomponents/mainreview';
 type TabType = 'basic' | 'salon' | 'company' | 'salary' | 'benefits' | 'lesson' | 'review';
 
@@ -132,7 +134,19 @@ export default function Page() {
                     {activeTab === 'review' && (
                      <div>
                      <div>
-                     <Link href={`/review/page?salonId=${salon.id}`}>レビューを書く</Link>
+                     <Button className='bg-indigo-400 hover:bg-indigo-500'
+  component={Link}           // これで Button が Link に変わる
+  href={`/review/page?salonId=${salon.id}`}
+  variant="contained"
+  endIcon={<EditNoteIcon />}
+  sx={{
+    backgroundColor: '#6366F1',        // bg-indigo-400
+    '&:hover': { backgroundColor: '#4F46E5' } // hover:bg-indigo-500
+  }}
+>
+  レビューを書く
+</Button>
+                     
 
                      </div>
                      <div className="py-8">
