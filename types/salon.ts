@@ -24,6 +24,8 @@ export interface Salon {
     international_customer_frequency: string;
     company_id: number;
     featured?: boolean;
+    lat: number;
+    lon: number;
 }
 
 export interface Company {

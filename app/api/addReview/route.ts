@@ -1,0 +1,26 @@
+import { createClient } from "@/utils/supabase/server";
+import { NextResponse } from "next/server";
+
+type Review = {
+  id: number;
+  salon_id: number;
+  score_1: number;
+  score_2: number;
+  score_3: number;
+  score_4: number;
+  score_5: number;
+  comments: string;
+};
+
+export async function GET() {
+  const supabase = await createClient();
+
+  // SELECT のみ → 第二引数 never だけでOK
+  const { data: reviews, error } = await supabase
+    .from<any, never>("review")
+    .select("*");
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json({ reviews });
+}
