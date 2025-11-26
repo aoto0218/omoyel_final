@@ -4,6 +4,8 @@ export interface Salon {
     location: string;
     images: { image1?: string, image2?: string };
     address: string;
+    lat: number;
+    lng: number;
     name_kana: string;
     tags: string[];
     imageType: string;
