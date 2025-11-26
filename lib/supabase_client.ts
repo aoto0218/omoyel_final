@@ -10,12 +10,12 @@ const createClient = () => {
 const client = createClient();
 
 export const getSalonData = async () => {
-    const data = await client
+    const salondata = await client
         .from('salons')
         .select('*')
         .order('id', { ascending: true });
     
-    const salonData = data.data?.map((salon) => {
+    const salonData = salondata.data?.map((salon) => {
         let parsedImages = { image1: '', image2: '' };
 
         if (salon.images) {
@@ -32,4 +32,19 @@ export const getSalonData = async () => {
     });
 
     return { salonData };
+};
+
+export const getCompanyData = async () => {
+    const companyudata = await client
+        .from('companies')
+        .select('*')
+        .order('id', { ascending: true });
+
+    const companyData = companyudata.data?.map((company) => {
+        return{
+            ...company,
+        }
+    });
+
+    return { companyData };
 };

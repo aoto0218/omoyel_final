@@ -3,26 +3,40 @@
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { getSalonData } from '@/lib/supabase_client'
-import { Salon } from '@/types/salon';
+import { getSalonData, getCompanyData } from '@/lib/supabase_client';
+import { Salon, Company } from '@/types/salon';
+import SalonBasicInfo from '@/components/info/SalonBasicInfo';
+import SalonInfo from '@/components/info/SalonInfo';
+import CompanyBasicInfo from '@/components/info/CompanyBasicInfo';
+import CompanySalary from '@/components/info/CompanySalary';
+import CompanyBenefits from '@/components/info/CompanyBenefits';
+import CompanyLesson from '@/components/info/CompanyLesson';
 
+type TabType = 'basic' | 'salon' | 'company' | 'salary' | 'benefits' | 'lesson' | 'review';
 
 export default function Page() {
     const params = useParams();
     const router = useRouter();
     const salonId = Number(params.id);
 
-    const [salon,setSalon] = useState<Salon | null>(null);
-    const [isLoading,setIsLoading] = useState(true);
-    
+    const [salon, setSalon] = useState<Salon | null>(null);
+    const [company, setCompany] = useState<Company | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<TabType>('basic');
+
     useEffect(() => {
         const fetchSalon = async () => {
             setIsLoading(true);
-            const data = await getSalonData();
+            const salondata = await getSalonData();
+            const companydata = await getCompanyData();
 
-            setSalon(data.salonData?.find((s: Salon) => s.id === salonId) || null);
-            
+            const foundSalon = salondata.salonData?.find((s: Salon) => s.id === salonId) || null;
+            setSalon(foundSalon);
+
+            if (foundSalon) {
+                setCompany(companydata.companyData?.find((c: Company) => c.id === foundSalon?.company_id) || null);
+            }
+
             setIsLoading(false);
         };
 
@@ -53,211 +67,78 @@ export default function Page() {
         );
     }
 
+    const tabs = [
+        { id: 'basic' as TabType, label: '見学詳細' },
+        { id: 'salon' as TabType, label: 'サロンの特徴' },
+        { id: 'company' as TabType, label: '企業情報' },
+        { id: 'salary' as TabType, label: '給与・待遇' },
+        { id: 'benefits' as TabType, label: '福利厚生・休暇' },
+        { id: 'lesson' as TabType, label: '働き方・教育' },
+        { id: 'review' as TabType, label: 'レビュー・口コミ' },
+    ];
+
     return (
         <div className="min-h-screen bg-white">
-            <div className="px-4 py-4">
-                <button
-                    onClick={() => router.back()}
-                    className="flex items-center gap-1 text-indigo-500 hover:text-indigo-600 transition text-sm"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    戻る
-                </button>
+            {/* Fixed Header */}
+            <div className="fixed top-0 left-0 right-0 bg-white z-50 border-b border-gray-200">
+                {/* Back Button */}
+                <div className="px-4 py-4">
+                    <button
+                        onClick={() => router.back()}
+                        className="flex items-center gap-1 text-indigo-500 hover:text-indigo-600 transition text-sm"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        戻る
+                    </button>
+                </div>
+
+                {/* Salon Name - 中央揃え */}
+                <div className="px-4 pb-4 text-center">
+                    <h1 className="text-2xl font-bold text-gray-900 leading-tight">
+                        {salon.name}
+                    </h1>
+                </div>
+
+                {/* Tabs - 中央揃え */}
+                <div className="border-t border-gray-200">
+                    <div className="flex overflow-x-auto scrollbar-hide justify-center">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${activeTab === tab.id
+                                    ? 'border-indigo-500 text-indigo-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    }`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </div>
 
-            <div className="max-w-3xl mx-auto px-4 pb-24">
-                <h1 className="text-2xl font-bold text-gray-900 mb-6 leading-tight">
-                    {salon.name}
-                </h1>
-
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                    {salon.images?.image1 && (
-                        <div className="rounded-xl overflow-hidden">
-                            <Image
-                                alt='画像1'
-                                src={salon.images.image1}
-                                width={500}
-                                height={500}
-                            />
+            {/* Content with top padding to account for fixed header */}
+            <div className="pt-[180px] pb-32">
+                <div className="max-w-3xl mx-auto px-4">
+                    {activeTab === 'basic' && <SalonBasicInfo salon={salon} />}
+                    {activeTab === 'salon' && <SalonInfo salon={salon} />}
+                    {activeTab === 'company' && company && <CompanyBasicInfo company={company} />}
+                    {activeTab === 'salary' && company && <CompanySalary company={company} />}
+                    {activeTab === 'benefits' && company && <CompanyBenefits company={company} />}
+                    {activeTab === 'lesson' && company && <CompanyLesson company={company} />}
+                    {activeTab === 'review' && (
+                        <div className="py-8">
+                            <p className="text-gray-500 text-center">レビュー・口コミは現在準備中です。</p>
                         </div>
                     )}
-                    {salon.images?.image2 && (
-                        <div className="rounded-xl overflow-hidden">
-                            <Image
-                                alt='画像2'
-                                src={salon.images.image2}
-                                width={500}
-                                height={500}
-                            />
-                        </div>
-                    )}
-                </div>
-
-                {/* Address */}
-                {salon.address && (
-                    <p className="text-gray-700 mb-8 leading-relaxed text-sm">
-                        {salon.address}
-                    </p>
-                )}
-
-                {/* Information Sections */}
-                <div className="space-y-6">
-                    {/* サロン見学店舗名 */}
-                    {salon.nameKana && (
-                        <div>
-                            <h2 className="text-sm font-bold text-gray-900 mb-1">サロン見学店舗名：</h2>
-                            <p className="text-gray-800 text-sm">{salon.nameKana}</p>
-                        </div>
-                    )}
-
-                    {/* 見学日程 */}
-                    {salon.visitSchedule && (
-                        <div>
-                            <h2 className="text-sm font-bold text-gray-900 mb-1">見学日程：</h2>
-                            <p className="text-gray-800 text-sm">{salon.visitSchedule}</p>
-                        </div>
-                    )}
-
-                    {/* 所要時間 */}
-                    {salon.duration && (
-                        <div>
-                            <h2 className="text-sm font-bold text-gray-900 mb-1">所要時間：</h2>
-                            <p className="text-gray-800 text-sm">{salon.duration}</p>
-                        </div>
-                    )}
-
-                    {/* 当日の流れ */}
-                    {salon.flow && (
-                        <div>
-                            <h2 className="text-sm font-bold text-gray-900 mb-1">当日の流れ：</h2>
-                            <p className="text-gray-800 text-sm whitespace-pre-line leading-relaxed">{salon.flow}</p>
-                        </div>
-                    )}
-
-                    {/* 案内スタッフ */}
-                    {salon.guideStaff && (
-                        <div>
-                            <h2 className="text-sm font-bold text-gray-900 mb-1">案内スタッフ：</h2>
-                            <p className="text-gray-800 text-sm">{salon.guideStaff}</p>
-                        </div>
-                    )}
-
-                    {/* 担当者 */}
-                    {salon.contact && (
-                        <div>
-                            <h2 className="text-sm font-bold text-gray-900 mb-1">担当者：</h2>
-                            <p className="text-gray-800 text-sm">{salon.contact}</p>
-                        </div>
-                    )}
-
-                    {/* Instagram */}
-                    {salon.instagram && (
-                        <div>
-                            <h2 className="text-sm font-bold text-gray-900 mb-1">Instagram：</h2>
-                            <a
-                                href={salon.instagram.startsWith('http') ? salon.instagram : `https://instagram.com/${salon.instagram.replace('@', '')}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-gray-800 hover:text-indigo-600 transition text-sm break-all"
-                            >
-                                {salon.instagram}
-                            </a>
-                        </div>
-                    )}
-
-                    {/* 集合場所 */}
-                    {salon.meetingPlace && (
-                        <div>
-                            <h2 className="text-sm font-bold text-gray-900 mb-1">集合場所：</h2>
-                            <a
-                                href={salon.meetingPlace.startsWith('http') ? salon.meetingPlace : '#'}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-gray-800 hover:text-indigo-600 transition text-sm break-all"
-                            >
-                                {salon.meetingPlace}
-                            </a>
-                        </div>
-                    )}
-                </div>
-
-                {/* 得意メニュー Section */}
-                {salon.tags.length > 0 && (
-                    <div className="mt-12 mb-8">
-                        <h2 className="text-xl font-bold text-gray-900 mb-4">得意メニュー</h2>
-                        <div className="flex gap-2 flex-wrap">
-                            {salon.tags.map((tag, index) => (
-                                <span
-                                    key={index}
-                                    className="px-4 py-2 bg-gray-100 text-gray-800 text-sm rounded-md border border-gray-200"
-                                >
-                                    {tag}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* サロン情報 Section */}
-                <div className="mt-12">
-                    <h2 className="text-xl font-bold text-gray-900 mb-6">サロン情報</h2>
-
-                    <div className="space-y-6">
-                        {/* スタッフの男女比率 */}
-                        {salon.staffGenderRatio && (
-                            <div>
-                                <h3 className="text-sm font-bold text-gray-900 mb-1">スタッフの男女比率：</h3>
-                                <p className="text-gray-800 text-sm">{salon.staffGenderRatio}</p>
-                            </div>
-                        )}
-
-                        {/* スタッフの多い年齢層 */}
-                        {salon.staffAgeGroup && (
-                            <div>
-                                <h3 className="text-sm font-bold text-gray-900 mb-1">スタッフの多い年齢層：</h3>
-                                <p className="text-gray-800 text-sm">{salon.staffAgeGroup}</p>
-                            </div>
-                        )}
-
-                        {/* 職場の雰囲気 */}
-                        {salon.atmosphere && (
-                            <div>
-                                <h3 className="text-sm font-bold text-gray-900 mb-1">職場の雰囲気：</h3>
-                                <p className="text-gray-800 text-sm leading-relaxed">{salon.atmosphere}</p>
-                            </div>
-                        )}
-
-                        {/* お客様の男女比率 */}
-                        {salon.customerGenderRatio && (
-                            <div>
-                                <h3 className="text-sm font-bold text-gray-900 mb-1">お客様の男女比率：</h3>
-                                <p className="text-gray-800 text-sm">{salon.customerGenderRatio}</p>
-                            </div>
-                        )}
-
-                        {/* お客様の一番多い年齢層 */}
-                        {salon.customerAgeGroup && (
-                            <div>
-                                <h3 className="text-sm font-bold text-gray-900 mb-1">お客様の一番多い年齢層：</h3>
-                                <p className="text-gray-800 text-sm">{salon.customerAgeGroup}</p>
-                            </div>
-                        )}
-
-                        {/* 海外顧客の来店頻度 */}
-                        {salon.internationalCustomerFrequency && (
-                            <div>
-                                <h3 className="text-sm font-bold text-gray-900 mb-1">海外顧客の来店頻度：</h3>
-                                <p className="text-gray-800 text-sm">{salon.internationalCustomerFrequency}</p>
-                            </div>
-                        )}
-                    </div>
                 </div>
             </div>
 
             {/* Fixed Bottom Button */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white">
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 shadow-lg z-50">
                 <div className="max-w-3xl mx-auto">
-                    <button className="w-full px-8 py-4 bg-indigo-400 text-white font-medium rounded-full hover:bg-indigo-500 transition shadow-lg">
+                    <button className="w-full px-8 py-4 bg-indigo-400 text-white font-medium rounded-full hover:bg-indigo-500 transition">
                         サロン見学に申し込む
                     </button>
                 </div>
