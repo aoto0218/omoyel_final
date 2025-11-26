@@ -11,7 +11,8 @@ import CompanyBasicInfo from '@/components/info/CompanyBasicInfo';
 import CompanySalary from '@/components/info/CompanySalary';
 import CompanyBenefits from '@/components/info/CompanyBenefits';
 import CompanyLesson from '@/components/info/CompanyLesson';
-
+import Link from 'next/link';
+import MainReview from '@/components/reviewcomponents/mainreview';
 type TabType = 'basic' | 'salon' | 'company' | 'salary' | 'benefits' | 'lesson' | 'review';
 
 export default function Page() {
@@ -78,6 +79,7 @@ export default function Page() {
     ];
 
     return (
+      
         <div className="min-h-screen bg-white">
             {/* Fixed Header */}
             <div className="fixed top-0 left-0 right-0 bg-white z-50 border-b border-gray-200">
@@ -128,9 +130,16 @@ export default function Page() {
                     {activeTab === 'benefits' && company && <CompanyBenefits company={company} />}
                     {activeTab === 'lesson' && company && <CompanyLesson company={company} />}
                     {activeTab === 'review' && (
-                        <div className="py-8">
-                            <p className="text-gray-500 text-center">レビュー・口コミは現在準備中です。</p>
-                        </div>
+                     <div>
+                     <div>
+                     <Link href={`/review/page?salonId=${salon.id}`}>レビューを書く</Link>
+
+                     </div>
+                     <div className="py-8">
+                     <MainReview />
+                         {/* <p className="text-gray-500 text-center">レビュー・口コミは現在準備中です。</p> */}
+                     </div>
+                 </div>
                     )}
                 </div>
             </div>
