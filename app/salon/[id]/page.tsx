@@ -81,7 +81,7 @@ export default function Page() {
     ];
 
     return (
-      
+
         <div className="min-h-screen bg-white">
             {/* Fixed Header */}
             <div className="fixed top-0 left-0 right-0 bg-white z-50 border-b border-gray-200">
@@ -132,28 +132,28 @@ export default function Page() {
                     {activeTab === 'benefits' && company && <CompanyBenefits company={company} />}
                     {activeTab === 'lesson' && company && <CompanyLesson company={company} />}
                     {activeTab === 'review' && (
-                     <div>
-                     <div>
-                     <Button className='bg-indigo-400 hover:bg-indigo-500'
-  component={Link}           // これで Button が Link に変わる
-  href={`/review/page?salonId=${salon.id}`}
-  variant="contained"
-  endIcon={<EditNoteIcon />}
-  sx={{
-    backgroundColor: '#6366F1',        // bg-indigo-400
-    '&:hover': { backgroundColor: '#4F46E5' } // hover:bg-indigo-500
-  }}
->
-  レビューを書く
-</Button>
-                     
+                        <div>
+                            <div>
+                                <Button className='bg-indigo-400 hover:bg-indigo-500'
+                                    component={Link}           // これで Button が Link に変わる
+                                    href={`/review/page?salonId=${salon.id}`}
+                                    variant="contained"
+                                    endIcon={<EditNoteIcon />}
+                                    sx={{
+                                        backgroundColor: '#6366F1',        // bg-indigo-400
+                                        '&:hover': { backgroundColor: '#4F46E5' } // hover:bg-indigo-500
+                                    }}
+                                >
+                                    レビューを書く
+                                </Button>
 
-                     </div>
-                     <div className="py-8">
-                     <MainReview />
-                         {/* <p className="text-gray-500 text-center">レビュー・口コミは現在準備中です。</p> */}
-                     </div>
-                 </div>
+
+                            </div>
+                            <div className="py-8">
+                                <MainReview />
+                                {/* <p className="text-gray-500 text-center">レビュー・口コミは現在準備中です。</p> */}
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>
