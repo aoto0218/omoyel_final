@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { Salon } from '@/types/salon';
+import SalonMap from '../mapcomponents/submap';
 
 interface SalonBasicInfoProps {
     salon: Salon;
@@ -42,6 +43,13 @@ export default function SalonBasicInfo({ salon }: SalonBasicInfoProps) {
                     {salon.address}
                 </p>
             )}
+
+            {/* Map */}
+      {salon.lat && salon.lon && (
+        <div className="my-4">
+          <SalonMap salon={salon} />
+        </div>
+      )}
 
             {/* Basic Information */}
             <div className="space-y-4">

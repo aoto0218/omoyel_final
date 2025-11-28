@@ -1,6 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { FaStar } from "react-icons/fa";
 
 export type Review = {
@@ -16,9 +16,8 @@ export type Review = {
 };
 
 export default function MainReview() {
-    const params = useParams();
-    const salonId = Number(params.id); // URL パラメータ名に合わせる
-    
+  const params = useParams();
+  const salonId = Number(params.id);
 
   const [reviews, setReviews] = useState<Review[]>([]);
 
@@ -27,25 +26,64 @@ export default function MainReview() {
       .then(async (res) => {
         if (!res.ok) throw new Error("Network response was not ok");
         const data = await res.json();
-        const filtered = (data.reviews ?? []).filter((r: Review) => r.salon_id === salonId);
-        console.log("Fetched reviews:", salonId, filtered);
+        const filtered = (data.reviews ?? []).filter(
+          (r: Review) => r.salon_id === salonId
+        );
         setReviews(filtered);
       })
-      .catch((err) => {
-        console.error("Failed to fetch reviews:", err);
-        setReviews([]);
-      });
+      .catch(() => setReviews([]));
   }, [salonId]);
 
-  return (
-    <div className=" max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-gray-600">このサロンのレビュー</h1>
+  // ⭐ 全体平均の計算（5段階評価）
+  const summary = useMemo(() => {
+    if (reviews.length === 0) return { avgStars: 0, roundedStars: 0 };
 
+    // 各レビューの 5段階スコア
+    const starValues = reviews.map((r) => {
+      const total = r.score_1 + r.score_2 + r.score_3 + r.score_4 + r.score_5;
+      return (total / 25) * 5; // 5段階評価に正規化
+    });
+
+    const avg = starValues.reduce((sum, v) => sum + v, 0) / starValues.length;
+    const rounded = Math.round(avg); // 星マーク表示用
+
+    return { avgStars: avg, roundedStars: rounded };
+  }, [reviews]);
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6 text-gray-600">
+        このサロンのレビュー
+      </h1>
+
+      {/* ⭐ 上の平均表示（カード無し） */}
+      {reviews.length > 0 && (
+        <div className="mb-6 flex items-center">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <FaStar
+              key={i}
+              size={22}
+              className={i <= summary.roundedStars ? "text-yellow-400" : "text-gray-300"}
+            />
+          ))}
+
+          <span className="ml-3 text-gray-700 text-sm">
+            {summary.avgStars.toFixed(1)} / 5
+          </span>
+
+          <span className="ml-3 text-gray-500 text-sm">
+            ({reviews.length}件)
+          </span>
+        </div>
+      )}
+
+      {/* ⭐ 各レビュー */}
       {reviews.length ? (
         <div className="grid gap-6">
           {reviews.map((r) => {
-            const totalScore = r.score_1 + r.score_2 + r.score_3 + r.score_4 + r.score_5;
-            const maxScore = 5 * 5;
+            const totalScore =
+              r.score_1 + r.score_2 + r.score_3 + r.score_4 + r.score_5;
+            const maxScore = 25;
             const starsToShow = Math.round((totalScore / maxScore) * 5);
 
             return (
@@ -62,7 +100,9 @@ export default function MainReview() {
                     <FaStar
                       key={i}
                       size={20}
-                      className={i <= starsToShow ? "text-yellow-400" : "text-gray-300"}
+                      className={
+                        i <= starsToShow ? "text-yellow-400" : "text-gray-300"
+                      }
                     />
                   ))}
                   <span className="ml-2 text-gray-600 text-sm">
@@ -76,7 +116,7 @@ export default function MainReview() {
           })}
         </div>
       ) : (
-        <p className="text-gray-500" >レビューはまだありません</p>
+        <p className="text-gray-500">レビューはまだありません</p>
       )}
     </div>
   );
