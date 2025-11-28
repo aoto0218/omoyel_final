@@ -118,7 +118,7 @@ export const FilterModal: React.FC<Props> = ({
                             <h3 className="text-base font-bold text-gray-900">カラー</h3>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                            {['ワンカラー', 'ダブルカラー', '寒色系', '暖色系'].map((item) => (
+                            {['ワンカラー', 'ダブルカラー', 'ハイライト', 'ローライト', 'グラデーションカラー', 'インナーカラー', '寒色系', '暖色系'].map((item) => (
                                 <label key={item} className="flex items-center gap-3 cursor-pointer">
                                     <input
                                         type="checkbox"
@@ -139,7 +139,7 @@ export const FilterModal: React.FC<Props> = ({
                             <h3 className="text-base font-bold text-gray-900">カット</h3>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                            {['ロング', 'ボブ'].map((item) => (
+                            {['ベリーショート', 'ショート', 'ボブ', 'ミディアム', 'ロング'].map((item) => (
                                 <label key={item} className="flex items-center gap-3 cursor-pointer">
                                     <input
                                         type="checkbox"
@@ -174,6 +174,111 @@ export const FilterModal: React.FC<Props> = ({
                         </div>
                     </div>
 
+                    {/* パーマ */}
+                    <div>
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+                            <h3 className="text-base font-bold text-gray-900">パーマ</h3>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            {['ボディーパーマ', 'ニュアンスパーマ', 'スパイラルパーマ', 'ツイストパーマ', 'ツイストスパイラルパーマ', '波巻きパーマ'].map((item) => (
+                                <label key={item} className="flex items-center gap-3 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedMenus.includes(item)}
+                                        onChange={() => onMenuToggle(item)}
+                                        className="w-5 h-5 text-indigo-400 rounded border-gray-300 focus:ring-indigo-400"
+                                    />
+                                    <span className="text-gray-800 text-sm">{item}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* まつげ・ブロウ */}
+                    <div>
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+                            <h3 className="text-base font-bold text-gray-900">まつげ・ブロウ</h3>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            {['まつげパーマ', 'まつげエクステ', 'アイブロウ'].map((item) => (
+                                <label key={item} className="flex items-center gap-3 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedMenus.includes(item)}
+                                        onChange={() => onMenuToggle(item)}
+                                        className="w-5 h-5 text-indigo-400 rounded border-gray-300 focus:ring-indigo-400"
+                                    />
+                                    <span className="text-gray-800 text-sm">{item}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* 特殊ヘア */}
+                    <div>
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+                            <h3 className="text-base font-bold text-gray-900">特殊ヘア</h3>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            {['編み込み・ブレイズ', 'ドレッド', 'アフロ', 'バリアート'].map((item) => (
+                                <label key={item} className="flex items-center gap-3 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedMenus.includes(item)}
+                                        onChange={() => onMenuToggle(item)}
+                                        className="w-5 h-5 text-indigo-400 rounded border-gray-300 focus:ring-indigo-400"
+                                    />
+                                    <span className="text-gray-800 text-sm">{item}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* ネイル */}
+                    <div>
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+                            <h3 className="text-base font-bold text-gray-900">ネイル</h3>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            {['ジェルネイル', 'ネイルアート', 'フットネイル'].map((item) => (
+                                <label key={item} className="flex items-center gap-3 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedMenus.includes(item)}
+                                        onChange={() => onMenuToggle(item)}
+                                        className="w-5 h-5 text-indigo-400 rounded border-gray-300 focus:ring-indigo-400"
+                                    />
+                                    <span className="text-gray-800 text-sm">{item}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* エステ */}
+                    <div>
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+                            <h3 className="text-base font-bold text-gray-900">エステ</h3>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            {['フェイシャル', 'ボディ', 'リラクゼーション', '脱毛'].map((item) => (
+                                <label key={item} className="flex items-center gap-3 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedMenus.includes(item)}
+                                        onChange={() => onMenuToggle(item)}
+                                        className="w-5 h-5 text-indigo-400 rounded border-gray-300 focus:ring-indigo-400"
+                                    />
+                                    <span className="text-gray-800 text-sm">{item}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
                     {/* その他 */}
                     <div>
                         <div className="flex items-center gap-2 mb-3">
@@ -181,7 +286,7 @@ export const FilterModal: React.FC<Props> = ({
                             <h3 className="text-base font-bold text-gray-900">その他</h3>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                            {['パーマ', 'ヘアメイク', 'メンズ特化', 'ナチュラル', 'まつげ・ブロウ', 'ネイル', '特殊ヘア', 'なんでも'].map((item) => (
+                            {['ヘアメイク', 'メンズ特化', 'ナチュラル', '着付け', 'なんでも'].map((item) => (
                                 <label key={item} className="flex items-center gap-3 cursor-pointer">
                                     <input
                                         type="checkbox"

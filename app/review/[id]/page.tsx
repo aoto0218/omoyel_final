@@ -130,7 +130,7 @@ export default function ReviewForm({ initialSalonId }: ReviewFormProps) {
         {/* 背景を薄いグレー (bg-gray-100) にして、コントラストをつける */}
         <div className="p-4 bg-gray-100 rounded-lg">
           <p className="text-gray-800 font-medium mb-3 text-center text-base">
-            スタッフの対応はいかがでしたか？
+            スタッフの方の対応はいかがでしたか？
           </p>
           <StarRating value={score1} setValue={setScore1} />
         </div>
@@ -138,7 +138,7 @@ export default function ReviewForm({ initialSalonId }: ReviewFormProps) {
         {/* score2 */}
         <div className="p-4 bg-gray-100 rounded-lg">
           <p className="text-gray-800 font-medium mb-3 text-center text-base">
-            お店の雰囲気はどうでしたか？
+            店舗の雰囲気はいかがでしたか？
           </p>
           <StarRating value={score2} setValue={setScore2} />
         </div>
@@ -146,7 +146,7 @@ export default function ReviewForm({ initialSalonId }: ReviewFormProps) {
         {/* score3 */}
         <div className="p-4 bg-gray-100 rounded-lg">
           <p className="text-gray-800 font-medium mb-3 text-center text-base">
-            今後もこのサイトを使いたいと思いますか？
+            店舗の設備はいかがでしたか？
           </p>
           <StarRating value={score3} setValue={setScore3} />
         </div>
@@ -154,7 +154,7 @@ export default function ReviewForm({ initialSalonId }: ReviewFormProps) {
         {/* score4 */}
         <div className="p-4 bg-gray-100 rounded-lg">
           <p className="text-gray-800 font-medium mb-3 text-center text-base">
-            期待していた機能はありましたか？
+            店舗へのアクセスはいかがでしたか？
           </p>
           <StarRating value={score4} setValue={setScore4} />
         </div>
@@ -162,7 +162,7 @@ export default function ReviewForm({ initialSalonId }: ReviewFormProps) {
         {/* score5 */}
         <div className="p-4 bg-gray-100 rounded-lg">
           <p className="text-gray-800 font-medium mb-3 text-center text-base">
-            その他の満足度
+            期待していた体験はできましたか？
           </p>
           <StarRating value={score5} setValue={setScore5} />
         </div>
@@ -175,9 +175,10 @@ export default function ReviewForm({ initialSalonId }: ReviewFormProps) {
           <textarea
             value={comments}
             onChange={(e) => setComments(e.target.value)}
-            placeholder="ご自由にご記入ください"
+            placeholder="こちらにご記入ください"
             // 背景色を白 (bg-white) にし、境界線を薄いグレーに
             className="w-full h-28 border border-gray-300 rounded-xl p-3 resize-none bg-white text-gray-800 placeholder-gray-400 focus:ring-purple-500 focus:border-purple-500 shadow-sm"
+            required
           />
         </div>
 
