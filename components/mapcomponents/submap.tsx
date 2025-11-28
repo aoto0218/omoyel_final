@@ -46,7 +46,7 @@ export default function SalonMap({ salon }: SalonMapProps) {
   return (
     <div
       ref={mapRef}
-      style={{ width: "100%", height: "300px", borderRadius: "12px", overflow: "hidden" }}
+      style={{ width: "100%", height: "500px", borderRadius: "12px", overflow: "hidden" }}
     />
   );
 }

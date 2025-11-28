@@ -2,24 +2,22 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import Script from "next/script";
-import { Salon } from "@/types/salon";import { forwardRef, useImperativeHandle } from "react";
+import { Salon } from "@/types/salon"; import { forwardRef, useImperativeHandle } from "react";
 type Location = {
   id: number;
   name: string;
+  address: string;
   lat: number;
   lon: number;
   image1?: string;
 };
-
-
-type Props = { salons: Salon[] };
 
 export type ChildHandle = {
   initMapFromParent: () => void;
 };
 
 const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) => {
-  
+
   const mapRef = useRef<HTMLDivElement>(null);
   const [locations, setLocations] = useState<Location[]>([]);
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -31,6 +29,7 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
       const locs: Location[] = salons.map(s => ({
         id: s.id,
         name: s.name,
+        address: s.address,
         lat: s.lat,
         lon: s.lon,
         image1: s.images?.image1 || "/fallback.png",
@@ -65,8 +64,8 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
   //             lng: pos.lng,
   //             image1: salon.images?.image1 || "/fallback.png",
   //           } as Location;
-            
-            
+
+
   //         }
   //         return null;
   //       })
@@ -178,7 +177,7 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
               headerContent: total
             });
             goalInfoRef.current.open(map);
-            
+
           } else {
             alert("経路が見つかりません: " + status);
           }
@@ -188,23 +187,23 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
     [map]
   );
 
- 
 
-let openedInfoWindow: google.maps.InfoWindow | null = null;
 
-useEffect(() => {
-  if (!map || !userLatLng || locations.length === 0) return;
+  let openedInfoWindow: google.maps.InfoWindow | null = null;
 
-  locations.forEach((loc, i) => {
-    const spot = new google.maps.LatLng(loc.lat, loc.lon);
+  useEffect(() => {
+    if (!map || !userLatLng || locations.length === 0) return;
 
-    const marker = new google.maps.Marker({
-      position: spot,
-      map,
-      title: loc.name,
-    });
+    locations.forEach((loc, i) => {
+      const spot = new google.maps.LatLng(loc.lat, loc.lon);
 
-const content = `
+      const marker = new google.maps.Marker({
+        position: spot,
+        map,
+        title: loc.name,
+      });
+
+      const content = `
   <style>
     .location-card { 
       display: flex;
@@ -230,13 +229,13 @@ const content = `
     }
 
     .rating {
-      font-size: 14px;
+      font-size: 20px;
       font-weight: bold;
-      margin-bottom: 4px;
+      margin: 10px 0 5px;
     }
 
     .review-count {
-      font-size: 12px;
+      font-size: 16px;
       color: #666;
       margin-bottom: 8px;
     }
@@ -248,8 +247,9 @@ const content = `
 
     .btn-small {
       flex: 1;
-      padding: 4px 6px;
-      font-size: 11px;
+      padding: 6px 6px;
+      font-size: 14px;
+      font-weight: bold;
       background: #4285F4;
       color: white;
       border: none;
@@ -275,13 +275,13 @@ const content = `
       </div>
 
       <div class="button-row">
-        <a href ="/salon/${loc.id}" class="btn-small btn-detail" id="detailBtn-${i}">
-          詳細を見る
+        <a href ="/salon/${loc.id}" class="btn-small btn-detail"">
+          詳細
         </a>
 
-        <button class="btn-small" id="routeBtn-${i}">
+        <a href="https://www.google.co.jp/maps/dir/現在地/${loc.address}" class="btn-small" target="_blank">
           経路
-        </button>
+        </a>
       </div>
 
     </div>
@@ -291,57 +291,57 @@ const content = `
 
 
 
-    const headerEl = document.createElement("div");
-    headerEl.textContent = loc.name;
-    headerEl.style.color = "black";
-    headerEl.style.fontWeight = "bold";
-    headerEl.style.padding = "4px 8px";
+      const headerEl = document.createElement("div");
+      headerEl.textContent = loc.name;
+      headerEl.style.color = "black";
+      headerEl.style.fontWeight = "bold";
+      headerEl.style.padding = "4px 8px";
 
-    const info = new google.maps.InfoWindow({
-      headerContent: headerEl,
-      content,
-      maxWidth: 300,
-      minWidth: 300,
-    });
+      const info = new google.maps.InfoWindow({
+        headerContent: headerEl,
+        content,
+        maxWidth: 300,
+        minWidth: 300,
+      });
 
-    marker.addListener("click", () => {
+      marker.addListener("click", () => {
 
-      // ★ 前に開いていた InfoWindow を閉じる
-      if (openedInfoWindow && openedInfoWindow !== info) {
-        openedInfoWindow.close();
-      }
-
-      info.open(map, marker);
-
-      // ★ 開いた InfoWindow を記録
-      openedInfoWindow = info;
-
-      google.maps.event.addListenerOnce(info, "domready", () => {
-        const btn = document.getElementById(`routeBtn-${i}`);
-
-        if (btn) {
-          btn.addEventListener("click", () => {
-            // ★ Google マップへ飛ばす URL
-            const url = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lon}`;
-
-            // ★ アプリ or ブラウザで経路案内を開く
-            window.open(url, "_blank");
-          });
+        // ★ 前に開いていた InfoWindow を閉じる
+        if (openedInfoWindow && openedInfoWindow !== info) {
+          openedInfoWindow.close();
         }
+
+        info.open(map, marker);
+
+        // ★ 開いた InfoWindow を記録
+        openedInfoWindow = info;
+
+        google.maps.event.addListenerOnce(info, "domready", () => {
+          const btn = document.getElementById(`routeBtn-${i}`);
+
+          if (btn) {
+            btn.addEventListener("click", () => {
+              // ★ Google マップへ飛ばす URL
+              const url = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lon}`;
+
+              // ★ アプリ or ブラウザで経路案内を開く
+              window.open(url, "_blank");
+            });
+          }
+        });
       });
     });
-  });
-}, [locations, map, userLatLng]);
-  
+  }, [locations, map, userLatLng]);
+
 
   useImperativeHandle(ref, () => ({
     initMapFromParent: () => {
-     
+
       initMap();
     },
   }));
   // console.log("salons in mapmain:", salons);
-   
+
   return (
     <>
       <Script
@@ -352,7 +352,7 @@ const content = `
       <div ref={mapRef} style={{ width: "100%", height: "50vh" }} />
 
 
-  <style jsx>{`
+      <style jsx>{`
     .infowindow-header {
       background: #fff;
       color: #000;
@@ -364,6 +364,6 @@ const content = `
   `}</style>
     </>
   );
- 
+
 })
 export default Mapmain;

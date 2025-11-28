@@ -161,7 +161,7 @@ export default function Page() {
             <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 shadow-lg z-50">
                 <div className="max-w-3xl mx-auto">
                     <button className="w-full px-8 py-4 bg-indigo-400 text-white font-medium rounded-full hover:bg-indigo-500 transition">
-                        サロン見学に申し込む
+                        サロン見学に申し込む(※未実装)
                     </button>
                 </div>
             </div>
