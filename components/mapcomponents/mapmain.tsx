@@ -204,53 +204,92 @@ useEffect(() => {
       title: loc.name,
     });
 
-    const content = `
-      <style>
-        .location-card { 
-          width: 100%;
-          max-width: 240px;
-          font-family: sans-serif; 
-          color: black; 
-          padding-top: 4px;
-          overflow: hidden; 
-        }
+const content = `
+  <style>
+    .location-card { 
+      display: flex;
+      flex-direction: row;
+      width: 260px; /* 全体の幅も少し広げる */
+      font-family: sans-serif;
+      color: black; 
+      gap: 8px;
+    }
 
-        .location-card img {
-          width: 100% !important; 
-          height: 70px !important;
-          object-fit: cover;
-          border-radius: 6px;
-          margin-bottom: 6px;
-        }
+    .location-card img {
+      width: 120px;   /* ★サイズ変更 */
+      height: 120px;  /* ★サイズ変更 */
+      object-fit: cover;
+      border-radius: 6px;
+    }
 
-        @media (max-width: 400px) {
-          .location-card {
-            width: 90%;
-            max-width: 200px; 
-          }
-          .location-card img {
-            height: 60px !important;
-          }
-        }
-      </style>
-      
-      <div class="location-card">
-        <img src="${loc.image1 || '/fallback.png'}" />
+    .info-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
 
-        <button id="routeButton-${i}" 
-          style="
-            padding:2px 4px;
-            background:#4285F4;
-            color:white;
-            border:none;
-            border-radius:3px;
-            cursor:pointer;
-            font-size:10px;
-          ">
+    .rating {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .review-count {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 6px; /* ボタン間の隙間 */
+    }
+
+    .btn-small {
+      flex: 1;
+      padding: 4px 6px;
+      font-size: 11px;
+      background: #4285F4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .btn-detail {
+      background: #34A853;
+    }
+  </style>
+
+  <div class="location-card">
+
+    <img src="${loc.image1 || '/fallback.png'}" />
+
+    <div class="info-right">
+
+      <div>
+        <div class="rating">⭐ ${loc.rating ?? "0.0"}</div>
+        <div class="review-count">口コミ ${loc.reviewCount ?? 0}件</div>
+      </div>
+
+      <div class="button-row">
+        <a href ="/salon/${loc.id}" class="btn-small btn-detail" id="detailBtn-${i}">
+          詳細を見る
+        </a>
+
+        <button class="btn-small" id="routeBtn-${i}">
           経路
         </button>
       </div>
-    `;
+
+    </div>
+
+  </div>
+`;
+
+
 
     const headerEl = document.createElement("div");
     headerEl.textContent = loc.name;
@@ -261,8 +300,8 @@ useEffect(() => {
     const info = new google.maps.InfoWindow({
       headerContent: headerEl,
       content,
-      maxWidth: 250,
-      minWidth: 250,
+      maxWidth: 300,
+      minWidth: 300,
     });
 
     marker.addListener("click", () => {
@@ -278,7 +317,7 @@ useEffect(() => {
       openedInfoWindow = info;
 
       google.maps.event.addListenerOnce(info, "domready", () => {
-        const btn = document.getElementById(`routeButton-${i}`);
+        const btn = document.getElementById(`routeBtn-${i}`);
 
         if (btn) {
           btn.addEventListener("click", () => {
