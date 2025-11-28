@@ -236,18 +236,18 @@ export default function Home() {
       </div>
 
       {/* サロン表示部 */}
-      <div className="max-w-2xl mx-auto px-4 pt-6 pb-8">
+      <div>
         {viewMode === 'list' ? (
           isLoading ? (
             <div className="p-8">サロン情報を読み込み中</div>
           ) : (
-            <SalonCard salons={filteredSalons} />
+            <div className="max-w-2xl mx-auto px-4 pt-6 pb-8">
+              <SalonCard salons={filteredSalons} />
+            </div>
           )
         ) : (
-          <div className="bg-white rounded-2xl p-8 text-center">
-            <div style={{ display: viewMode === "map" ? "block" : "none" }}>
-              <Mapmain salons={filteredSalons} ref={childRef} />
-            </div>
+          <div className="mt-[-145px] h-[calc(100vh-85px)]">
+            <Mapmain salons={filteredSalons} ref={childRef} />
           </div>
         )}
       </div>

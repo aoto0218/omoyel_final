@@ -349,7 +349,7 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
         strategy="afterInteractive"
         onLoad={initMap}
       />
-      <div ref={mapRef} style={{ width: "100%", height: "50vh" }} />
+      <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
 
 
       <style jsx>{`
