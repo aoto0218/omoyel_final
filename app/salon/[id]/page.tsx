@@ -14,7 +14,7 @@ import CompanyLesson from '@/components/info/CompanyLesson';
 import Link from "next/link";
 import Button from "@mui/material/Button";
 import EditNoteIcon from '@mui/icons-material/EditNote';
-import MainReview from '@/components/reviewcomponents/mainreview';
+import MainReview from '@/components/info/SalonReview';
 type TabType = 'basic' | 'salon' | 'company' | 'salary' | 'benefits' | 'lesson' | 'review';
 
 export default function Page() {
@@ -151,7 +151,6 @@ export default function Page() {
                             </div>
                             <div className="py-8">
                                 <MainReview />
-                                {/* <p className="text-gray-500 text-center">レビュー・口コミは現在準備中です。</p> */}
                             </div>
                         </div>
                     )}
