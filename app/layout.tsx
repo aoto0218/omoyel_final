@@ -1,5 +1,3 @@
-// app/layout.tsx
-
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -11,11 +9,11 @@ export const metadata: Metadata = {
   description: 'あなたの理想のサロンを見つけましょう',
 };
 
-export default function RootLayout({
-  children,
-}: {
+type RootLayoutProps = {
   children: React.ReactNode;
-}) {
+};
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="ja">
       <body className={inter.className}>{children}</body>
