@@ -190,24 +190,21 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
 
  
 
-  let openedInfoWindow: google.maps.InfoWindow | null = null;
+let openedInfoWindow: google.maps.InfoWindow | null = null;
 
-  useEffect(() => {
-    if (!map || !userLatLng || locations.length === 0) return;
-  
-    locations.forEach((loc, i) => {
-      const spot = new google.maps.LatLng(loc.lat, loc.lon);
-  
-      const marker = new google.maps.Marker({
-        position: spot,
-        map,
-        title: loc.name,
-      });
-  
+useEffect(() => {
+  if (!map || !userLatLng || locations.length === 0) return;
 
-      // <a href="/salon/${loc.id}">
-      // <img src="${loc.image1 || '/fallback.png'}"></img>
-      const content = `
+  locations.forEach((loc, i) => {
+    const spot = new google.maps.LatLng(loc.lat, loc.lon);
+
+    const marker = new google.maps.Marker({
+      position: spot,
+      map,
+      title: loc.name,
+    });
+
+    const content = `
       <style>
         .location-card { 
           width: 100%;
@@ -217,108 +214,85 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
           padding-top: 4px;
           overflow: hidden; 
         }
-      
+
         .location-card img {
           width: 100% !important; 
-          height: 70px !important; /* ★修正: heightにも !important を追加 */
+          height: 70px !important;
           object-fit: cover;
           border-radius: 6px;
           margin-bottom: 6px;
         }
-      
+
         @media (max-width: 400px) {
           .location-card {
             width: 90%;
             max-width: 200px; 
           }
           .location-card img {
-            height: 60px !important; /* ★これはすでに適用済み */
+            height: 60px !important;
           }
         }
-    
-        /* select/buttonのスタイルも、必要であればここに含めますが、
-           今回はインラインスタイルで定義されているため省略します。
-           インラインCSSと競合する場合は、こちらで !important を使うと効果的です。
-        */
       </style>
       
       <div class="location-card">
-        
-      
-      <img src="${loc.image1 || '/fallback.png'}"></img>
-        <select id="modeSelect-${i}" style="margin-bottom:6px;">
-          <option value="DRIVING">車</option>
-          <option value="WALKING">徒歩</option>
-          <option value="BICYCLING">自転車</option>
-          <option value="TRANSIT">電車</option>
-        </select>
-      
+        <img src="${loc.image1 || '/fallback.png'}" />
+
         <button id="routeButton-${i}" 
-        style="
-          padding:2px 4px;
-          background:#4285F4;
-          color:white;
-          border:none;
-          border-radius:3px;
-          cursor:pointer;
-          font-size:10px;
-        ">
+          style="
+            padding:2px 4px;
+            background:#4285F4;
+            color:white;
+            border:none;
+            border-radius:3px;
+            cursor:pointer;
+            font-size:10px;
+          ">
           経路
         </button>
       </div>
     `;
-    
+
     const headerEl = document.createElement("div");
-    headerEl.className = "infowindow-header";
     headerEl.textContent = loc.name;
-    
-    // ★修正点1: インラインスタイルで色を直接指定
-    headerEl.style.color = "black"; 
-    headerEl.style.fontWeight = "bold"; // 見やすく太字にすることも推奨
-    // 必要に応じて余白も調整
-    headerEl.style.padding = "4px 8px"; 
-    // headerEl.style.backgroundColor = "lightgray"; // 必要に応じて背景色も
-    
-    // ★修正点2: または、CSSでクラスを定義して適用
-    // headerEl.className = "infowindow-header black-text";
-const info = new google.maps.InfoWindow({
-  headerContent: headerEl,
-  content,
-  maxWidth: 250,
-  minWidth: 250,
-  
-  // maxWidth: 250
-});
+    headerEl.style.color = "black";
+    headerEl.style.fontWeight = "bold";
+    headerEl.style.padding = "4px 8px";
 
-  
-      marker.addListener("click", () => {
+    const info = new google.maps.InfoWindow({
+      headerContent: headerEl,
+      content,
+      maxWidth: 250,
+      minWidth: 250,
+    });
 
-      // ★ 前に開いていた InfoWindow があれば閉じる
+    marker.addListener("click", () => {
+
+      // ★ 前に開いていた InfoWindow を閉じる
       if (openedInfoWindow && openedInfoWindow !== info) {
         openedInfoWindow.close();
       }
 
-      // 現在の InfoWindow を開く
       info.open(map, marker);
 
-      // ★ 今開いた InfoWindow を記録
+      // ★ 開いた InfoWindow を記録
       openedInfoWindow = info;
 
       google.maps.event.addListenerOnce(info, "domready", () => {
         const btn = document.getElementById(`routeButton-${i}`);
-        const select = document.getElementById(`modeSelect-${i}`) as HTMLSelectElement;
 
-        if (btn && select) {
+        if (btn) {
           btn.addEventListener("click", () => {
-            const modeStr = select.value as keyof typeof google.maps.TravelMode;
-            const mode = google.maps.TravelMode[modeStr];
-            calculateAndDisplayRoute(userLatLng, spot, mode);
+            // ★ Google マップへ飛ばす URL
+            const url = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lon}`;
+
+            // ★ アプリ or ブラウザで経路案内を開く
+            window.open(url, "_blank");
           });
         }
       });
     });
   });
-}, [locations, map, userLatLng, calculateAndDisplayRoute]);
+}, [locations, map, userLatLng]);
   
 
   useImperativeHandle(ref, () => ({
