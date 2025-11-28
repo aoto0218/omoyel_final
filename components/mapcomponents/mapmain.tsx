@@ -190,6 +190,7 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
 
  
 
+  let openedInfoWindow: google.maps.InfoWindow | null = null;
 
   useEffect(() => {
     if (!map || !userLatLng || locations.length === 0) return;
@@ -244,6 +245,7 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
       <div class="location-card">
         
       
+      <img src="${loc.image1 || '/fallback.png'}"></img>
         <select id="modeSelect-${i}" style="margin-bottom:6px;">
           <option value="DRIVING">車</option>
           <option value="WALKING">徒歩</option>
@@ -283,28 +285,40 @@ const info = new google.maps.InfoWindow({
   headerContent: headerEl,
   content,
   maxWidth: 250,
+  minWidth: 250,
   
   // maxWidth: 250
 });
 
   
       marker.addListener("click", () => {
-        info.open(map, marker);
-  
-        google.maps.event.addListenerOnce(info, "domready", () => {
-          const btn = document.getElementById(`routeButton-${i}`);
-          const select = document.getElementById(`modeSelect-${i}`) as HTMLSelectElement;
-          if (btn && select) {
-            btn.addEventListener("click", () => {
-              const modeStr = select.value as keyof typeof google.maps.TravelMode;
-              const mode = google.maps.TravelMode[modeStr];
-              calculateAndDisplayRoute(userLatLng, spot, mode);
-            });
-          }
-        });
+
+      // ★ 前に開いていた InfoWindow があれば閉じる
+      if (openedInfoWindow && openedInfoWindow !== info) {
+        openedInfoWindow.close();
+      }
+
+      // 現在の InfoWindow を開く
+      info.open(map, marker);
+
+      // ★ 今開いた InfoWindow を記録
+      openedInfoWindow = info;
+
+      google.maps.event.addListenerOnce(info, "domready", () => {
+        const btn = document.getElementById(`routeButton-${i}`);
+        const select = document.getElementById(`modeSelect-${i}`) as HTMLSelectElement;
+
+        if (btn && select) {
+          btn.addEventListener("click", () => {
+            const modeStr = select.value as keyof typeof google.maps.TravelMode;
+            const mode = google.maps.TravelMode[modeStr];
+            calculateAndDisplayRoute(userLatLng, spot, mode);
+          });
+        }
       });
     });
-  }, [locations, map, userLatLng, calculateAndDisplayRoute]);
+  });
+}, [locations, map, userLatLng, calculateAndDisplayRoute]);
   
 
   useImperativeHandle(ref, () => ({
