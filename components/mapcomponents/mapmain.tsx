@@ -10,6 +10,8 @@ type Location = {
   lat: number;
   lon: number;
   image1?: string;
+  rating?: number;
+  reviewCount?: number;
 };
 
 export type ChildHandle = {
@@ -33,6 +35,8 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
         lat: s.lat,
         lon: s.lon,
         image1: s.images?.image1 || "/fallback.png",
+        rating: s.rating,
+        reviewCount: s.reviewCount,
       }));
       setLocations(locs);
     }
