@@ -4,7 +4,6 @@ export interface Salon {
     location: string;
     images: { image1?: string, image2?: string };
     address: string;
-    
     name_kana: string;
     tags: string[];
     imageType: string;
@@ -25,6 +24,14 @@ export interface Salon {
     featured?: boolean;
     lat: number;
     lon: number;
+    averageRatings?: {
+        rating_1: number;
+        rating_2: number;
+        rating_3: number;
+        rating_4: number;
+        rating_5: number;
+        overall: number;
+    } | null;
 }
 
 export interface Company {

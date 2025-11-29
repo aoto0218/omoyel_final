@@ -2,24 +2,22 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import Script from "next/script";
-import { Salon } from "@/types/salon";import { forwardRef, useImperativeHandle } from "react";
+import { Salon } from "@/types/salon"; import { forwardRef, useImperativeHandle } from "react";
 type Location = {
   id: number;
   name: string;
+  address: string;
   lat: number;
   lon: number;
   image1?: string;
 };
-
-
-type Props = { salons: Salon[] };
 
 export type ChildHandle = {
   initMapFromParent: () => void;
 };
 
 const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) => {
-  
+
   const mapRef = useRef<HTMLDivElement>(null);
   const [locations, setLocations] = useState<Location[]>([]);
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -31,6 +29,7 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
       const locs: Location[] = salons.map(s => ({
         id: s.id,
         name: s.name,
+        address: s.address,
         lat: s.lat,
         lon: s.lon,
         image1: s.images?.image1 || "/fallback.png",
@@ -65,8 +64,8 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
   //             lng: pos.lng,
   //             image1: salon.images?.image1 || "/fallback.png",
   //           } as Location;
-            
-            
+
+
   //         }
   //         return null;
   //       })
@@ -178,7 +177,7 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
               headerContent: total
             });
             goalInfoRef.current.open(map);
-            
+
           } else {
             alert("経路が見つかりません: " + status);
           }
@@ -188,133 +187,161 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
     [map]
   );
 
- 
 
+
+  let openedInfoWindow: google.maps.InfoWindow | null = null;
 
   useEffect(() => {
     if (!map || !userLatLng || locations.length === 0) return;
-  
+
     locations.forEach((loc, i) => {
       const spot = new google.maps.LatLng(loc.lat, loc.lon);
-  
+
       const marker = new google.maps.Marker({
         position: spot,
         map,
         title: loc.name,
       });
-  
 
-      // <a href="/salon/${loc.id}">
-      // <img src="${loc.image1 || '/fallback.png'}"></img>
       const content = `
-      <style>
-        .location-card { 
-          width: 100%;
-          max-width: 240px;
-          font-family: sans-serif; 
-          color: black; 
-          padding-top: 4px;
-          overflow: hidden; 
-        }
-      
-        .location-card img {
-          width: 100% !important; 
-          height: 70px !important; /* ★修正: heightにも !important を追加 */
-          object-fit: cover;
-          border-radius: 6px;
-          margin-bottom: 6px;
-        }
-      
-        @media (max-width: 400px) {
-          .location-card {
-            width: 90%;
-            max-width: 200px; 
-          }
-          .location-card img {
-            height: 60px !important; /* ★これはすでに適用済み */
-          }
-        }
-    
-        /* select/buttonのスタイルも、必要であればここに含めますが、
-           今回はインラインスタイルで定義されているため省略します。
-           インラインCSSと競合する場合は、こちらで !important を使うと効果的です。
-        */
-      </style>
-      
-      <div class="location-card">
-        
-      
-        <select id="modeSelect-${i}" style="margin-bottom:6px;">
-          <option value="DRIVING">車</option>
-          <option value="WALKING">徒歩</option>
-          <option value="BICYCLING">自転車</option>
-          <option value="TRANSIT">電車</option>
-        </select>
-      
-        <button id="routeButton-${i}" 
-        style="
-          padding:2px 4px;
-          background:#4285F4;
-          color:white;
-          border:none;
-          border-radius:3px;
-          cursor:pointer;
-          font-size:10px;
-        ">
-          経路
-        </button>
-      </div>
-    `;
-    
-    const headerEl = document.createElement("div");
-    headerEl.className = "infowindow-header";
-    headerEl.textContent = loc.name;
-    
-    // ★修正点1: インラインスタイルで色を直接指定
-    headerEl.style.color = "black"; 
-    headerEl.style.fontWeight = "bold"; // 見やすく太字にすることも推奨
-    // 必要に応じて余白も調整
-    headerEl.style.padding = "4px 8px"; 
-    // headerEl.style.backgroundColor = "lightgray"; // 必要に応じて背景色も
-    
-    // ★修正点2: または、CSSでクラスを定義して適用
-    // headerEl.className = "infowindow-header black-text";
-const info = new google.maps.InfoWindow({
-  headerContent: headerEl,
-  content,
-  maxWidth: 250,
-  
-  // maxWidth: 250
-});
+  <style>
+    .location-card { 
+      display: flex;
+      flex-direction: row;
+      width: 260px; /* 全体の幅も少し広げる */
+      font-family: sans-serif;
+      color: black; 
+      gap: 8px;
+    }
 
-  
+    .location-card img {
+      width: 120px;   /* ★サイズ変更 */
+      height: 120px;  /* ★サイズ変更 */
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .info-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .rating {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 10px 0 5px;
+    }
+
+    .review-count {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 6px; /* ボタン間の隙間 */
+    }
+
+    .btn-small {
+      flex: 1;
+      padding: 6px 6px;
+      font-size: 14px;
+      font-weight: bold;
+      background: #4285F4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .btn-detail {
+      background: #34A853;
+    }
+  </style>
+
+  <div class="location-card">
+
+    <img src="${loc.image1 || '/fallback.png'}" />
+
+    <div class="info-right">
+
+      <div>
+        <div class="rating">⭐ ${loc.rating ?? "0.0"}</div>
+        <div class="review-count">口コミ ${loc.reviewCount ?? 0}件</div>
+      </div>
+
+      <div class="button-row">
+        <a href ="/salon/${loc.id}" class="btn-small btn-detail"">
+          詳細
+        </a>
+
+        <a href="https://www.google.co.jp/maps/dir/現在地/${loc.address}" class="btn-small" target="_blank">
+          経路
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+`;
+
+
+
+      const headerEl = document.createElement("div");
+      headerEl.textContent = loc.name;
+      headerEl.style.color = "black";
+      headerEl.style.fontWeight = "bold";
+      headerEl.style.padding = "4px 8px";
+
+      const info = new google.maps.InfoWindow({
+        headerContent: headerEl,
+        content,
+        maxWidth: 300,
+        minWidth: 300,
+      });
+
       marker.addListener("click", () => {
+
+        // ★ 前に開いていた InfoWindow を閉じる
+        if (openedInfoWindow && openedInfoWindow !== info) {
+          openedInfoWindow.close();
+        }
+
         info.open(map, marker);
-  
+
+        // ★ 開いた InfoWindow を記録
+        openedInfoWindow = info;
+
         google.maps.event.addListenerOnce(info, "domready", () => {
-          const btn = document.getElementById(`routeButton-${i}`);
-          const select = document.getElementById(`modeSelect-${i}`) as HTMLSelectElement;
-          if (btn && select) {
+          const btn = document.getElementById(`routeBtn-${i}`);
+
+          if (btn) {
             btn.addEventListener("click", () => {
-              const modeStr = select.value as keyof typeof google.maps.TravelMode;
-              const mode = google.maps.TravelMode[modeStr];
-              calculateAndDisplayRoute(userLatLng, spot, mode);
+              // ★ Google マップへ飛ばす URL
+              const url = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lon}`;
+
+              // ★ アプリ or ブラウザで経路案内を開く
+              window.open(url, "_blank");
             });
           }
         });
       });
     });
-  }, [locations, map, userLatLng, calculateAndDisplayRoute]);
-  
+  }, [locations, map, userLatLng]);
+
 
   useImperativeHandle(ref, () => ({
     initMapFromParent: () => {
-     
+
       initMap();
     },
   }));
   // console.log("salons in mapmain:", salons);
-   
+
   return (
     <>
       <Script
@@ -322,10 +349,10 @@ const info = new google.maps.InfoWindow({
         strategy="afterInteractive"
         onLoad={initMap}
       />
-      <div ref={mapRef} style={{ width: "100%", height: "50vh" }} />
+      <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
 
 
-  <style jsx>{`
+      <style jsx>{`
     .infowindow-header {
       background: #fff;
       color: #000;
@@ -337,6 +364,6 @@ const info = new google.maps.InfoWindow({
   `}</style>
     </>
   );
- 
+
 })
 export default Mapmain;

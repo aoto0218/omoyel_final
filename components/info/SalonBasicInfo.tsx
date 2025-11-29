@@ -1,5 +1,7 @@
 import Image from 'next/image';
 import { Salon } from '@/types/salon';
+import SalonMap from '../mapcomponents/submap';
+import Link from 'next/link';
 
 interface SalonBasicInfoProps {
     salon: Salon;
@@ -41,6 +43,16 @@ export default function SalonBasicInfo({ salon }: SalonBasicInfoProps) {
                 <p className="text-gray-700 leading-relaxed text-sm">
                     {salon.address}
                 </p>
+            )}
+
+            {/* Map */}
+            {salon.lat && salon.lon && (
+                <div className="my-4">
+                    <SalonMap salon={salon} />
+                    <Link href={`https://www.google.co.jp/maps/dir/現在地/${salon.address}`} target="_blank" className="bg-green-600 text-white px-4 py-2 rounded-md text-sm mt-2 inline-block hover:bg-green-700 transition">
+                        経路を検索する
+                    </Link>
+                </div>
             )}
 
             {/* Basic Information */}

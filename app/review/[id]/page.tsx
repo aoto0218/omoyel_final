@@ -1,15 +1,16 @@
-'use client';
+"use client";
 import React, { useState } from "react";
 import { FaStar } from "react-icons/fa";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from "lucide-react";
+
 interface ReviewFormProps {
   initialSalonId?: number;
 }
 
 export default function ReviewForm({ initialSalonId }: ReviewFormProps) {
   const searchParams = useSearchParams();
-  const querySalonId = searchParams.get('salonId');
+  const querySalonId = searchParams.get("salonId");
   const router = useRouter();
   const [salonId] = useState(querySalonId || initialSalonId?.toString() || "");
   const [score1, setScore1] = useState(0);
@@ -31,8 +32,8 @@ export default function ReviewForm({ initialSalonId }: ReviewFormProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (isSubmitting) return; // 送信中なら何もしない
-    setIsSubmitting(true); // フラグを立てる
+    if (isSubmitting) return;
+    setIsSubmitting(true);
 
     try {
       const res = await fetch("/api/addReview", {
@@ -64,7 +65,7 @@ export default function ReviewForm({ initialSalonId }: ReviewFormProps) {
       console.error(error);
       alert("通信エラー");
     } finally {
-      setIsSubmitting(false); // フラグを戻す
+      setIsSubmitting(false);
     }
   }
 
@@ -81,7 +82,10 @@ export default function ReviewForm({ initialSalonId }: ReviewFormProps) {
         {stars.map((star) => (
           <FaStar
             key={star}
-            className={`cursor-pointer ${star <= value ? "text-yellow-400" : "text-gray-300"}`}
+            className={`cursor-pointer ${
+              // 星の色はそのまま yellow-400 を使用
+              star <= value ? "text-yellow-500" : "text-gray-300"
+            }`}
             size={30}
             onClick={() => setValue(star)}
           />
@@ -91,84 +95,113 @@ export default function ReviewForm({ initialSalonId }: ReviewFormProps) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-purple-100 to-purple-300 p-6">
+    // 1. 全体の背景を白 (bg-gray-50) に設定
+    <div className="min-h-screen flex flex-col items-center bg-gray-50 p-4 sm:p-6">
+      <div className="w-full max-w-sm">
+        {/* max-w-smに固定 */}
+        {/* 2. 戻るボタンの色 (テキストを濃い色に変更) */}
+        <div className="mb-4">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition text-sm font-medium"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            戻る
+          </button>
+        </div>
+      </div>
 
-<div className="px-4 py-4">
-                    <button
-                        onClick={() => router.back()}
-                        className="flex items-center gap-1 text-indigo-500 hover:text-indigo-600 transition text-sm"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        戻る
-                    </button>
-                </div>
+      {/* 3. フォームの背景を白 (bg-white) に設定 */}
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm bg-white shadow-xl rounded-2xl p-6 space-y-6"
+        className="w-full max-w-sm bg-white shadow-xl rounded-2xl p-6 space-y-6 border border-gray-200"
       >
-        <h1 className="text-xl font-bold text-center text-purple-700">
+        {/* フォームタイトル */}
+        <h1 className="text-xl font-bold text-center text-gray-900 mb-6">
           OMOYEL サロンレビュー
         </h1>
 
         {/* サロンIDは非表示 */}
         <input type="hidden" value={salonId} />
 
+        {/* スコアリングセクション */}
+
         {/* score1 */}
-        <div className="p-3 bg-purple-50 rounded-lg">
-          <p className="text-gray-700 font-medium mb-3 text-center">🌟 スタッフの対応はいかがでしたか？</p>
+        {/* 背景を薄いグレー (bg-gray-100) にして、コントラストをつける */}
+        <div className="p-4 bg-gray-100 rounded-lg">
+          <p className="text-gray-800 font-medium mb-3 text-center text-base">
+            スタッフの方の対応はいかがでしたか？
+          </p>
           <StarRating value={score1} setValue={setScore1} />
         </div>
 
         {/* score2 */}
-        <div className="p-3 bg-purple-50 rounded-lg">
-          <p className="text-gray-700 font-medium mb-3 text-center">✨ お店の雰囲気はどうでしたか？</p>
+        <div className="p-4 bg-gray-100 rounded-lg">
+          <p className="text-gray-800 font-medium mb-3 text-center text-base">
+            店舗の雰囲気はいかがでしたか？
+          </p>
           <StarRating value={score2} setValue={setScore2} />
         </div>
 
         {/* score3 */}
-        <div className="p-3 bg-purple-50 rounded-lg">
-          <p className="text-gray-700 font-medium mb-3 text-center">💛 今後もこのサイトを使いたいと思いますか？</p>
+        <div className="p-4 bg-gray-100 rounded-lg">
+          <p className="text-gray-800 font-medium mb-3 text-center text-base">
+            店舗の設備はいかがでしたか？
+          </p>
           <StarRating value={score3} setValue={setScore3} />
         </div>
 
         {/* score4 */}
-        <div className="p-3 bg-purple-50 rounded-lg">
-          <p className="text-gray-700 font-medium mb-3 text-center">🤩 期待していた機能はありましたか？</p>
+        <div className="p-4 bg-gray-100 rounded-lg">
+          <p className="text-gray-800 font-medium mb-3 text-center text-base">
+            店舗へのアクセスはいかがでしたか？
+          </p>
           <StarRating value={score4} setValue={setScore4} />
         </div>
 
         {/* score5 */}
-        <div className="p-3 bg-purple-50 rounded-lg">
-          <p className="text-gray-700 font-medium mb-3 text-center">⭐ その他の満足度</p>
+        <div className="p-4 bg-gray-100 rounded-lg">
+          <p className="text-gray-800 font-medium mb-3 text-center text-base">
+            期待していた体験はできましたか？
+          </p>
           <StarRating value={score5} setValue={setScore5} />
         </div>
 
         {/* コメント */}
         <div>
-          <p className="text-gray-700 font-medium mb-2">サロンを見学した感想や意見をご記入ください</p>
+          <p className="text-gray-800 font-medium mb-2">
+            サロンを見学した感想や意見をご記入ください
+          </p>
           <textarea
             value={comments}
             onChange={(e) => setComments(e.target.value)}
-            placeholder="ご自由にご記入ください"
-            className="w-full h-28 border rounded-xl p-3 resize-none bg-gray-50 text-gray-900"
+            placeholder="こちらにご記入ください"
+            // 背景色を白 (bg-white) にし、境界線を薄いグレーに
+            className="w-full h-28 border border-gray-300 rounded-xl p-3 resize-none bg-white text-gray-800 placeholder-gray-400 focus:ring-purple-500 focus:border-purple-500 shadow-sm"
+            required
           />
         </div>
 
-        {/* 送信ボタン */}
+        {/* 送信ボタン（色は維持、非活性時の色を調整） */}
         <button
           type="submit"
           disabled={!isFormComplete || isSubmitting}
-          className={`w-full py-3 rounded-xl font-bold text-center transition-all ${
+          className={`w-full py-3 rounded-xl font-bold text-center transition-all shadow-lg mt-6 ${
             isFormComplete && !isSubmitting
-              ? "bg-purple-600 text-white hover:bg-purple-700"
-              : "bg-gray-400 text-gray-700 cursor-not-allowed"
+              ? // 画像のボタンに近い、紫のグラデーション（維持）
+                "bg-gradient-to-r from-purple-600 to-indigo-500 text-white hover:from-purple-700 hover:to-indigo-600"
+              : // 非活性時は薄いグレーと濃いテキストに
+                "bg-gray-200 text-gray-500 cursor-not-allowed"
           }`}
         >
           {isSubmitting ? "送信中..." : "レビュー登録"}
         </button>
 
         {!isFormComplete && (
-          <p className="text-sm text-red-500 text-center">※全ての評価（星）を選択してください</p>
+          // 白背景で目立つように赤の色を調整
+          <p className="text-sm text-red-600 text-center">
+            ※全ての評価（星）を選択してください
+          </p>
         )}
       </form>
     </div>
