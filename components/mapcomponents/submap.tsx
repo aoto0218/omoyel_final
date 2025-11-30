@@ -9,44 +9,54 @@ interface SalonMapProps {
 
 export default function SalonMap({ salon }: SalonMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [ready, setReady] = useState(false);
 
-  // Google Maps スクリプトを動的に読み込む
+  // Google Maps APIがロードされるまで待つ
   useEffect(() => {
-    if (typeof window === "undefined") return; // サーバーでは何もしない
+    const timer = setInterval(() => {
+      if (window.google && window.google.maps) {
+        setReady(true);
+        clearInterval(timer);
+      }
+    }, 30);
 
-    if (!document.querySelector("#google-maps")) {
-      const script = document.createElement("script");
-      script.id = "google-maps";
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => setIsLoaded(true);
-      document.head.appendChild(script);
-    } else {
-      setIsLoaded(true);
-    }
+    return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    if (!isLoaded || !mapRef.current || !salon.lat || !salon.lon) return;
+  return (
+    <>
+      <div
+        ref={mapRef}
+        style={{
+          width: "100%",
+          height: "500px",
+          borderRadius: "12px",
+          overflow: "hidden",
+        }}
+      />
+      {ready && <InitMap salon={salon} mapRef={mapRef} />}
+    </>
+  );
+}
 
-    const map = new google.maps.Map(mapRef.current, {
+function InitMap({ salon, mapRef }: any) {
+  useEffect(() => {
+    if (!window.google || !window.google.maps) return;
+    if (!mapRef.current) return;
+    if ((mapRef.current as any)._mapInitialized) return;
+    (mapRef.current as any)._mapInitialized = true;
+
+    const map = new window.google.maps.Map(mapRef.current, {
       center: { lat: salon.lat, lng: salon.lon },
       zoom: 16,
     });
 
-    new google.maps.Marker({
+    new window.google.maps.Marker({
       position: { lat: salon.lat, lng: salon.lon },
       map,
       title: salon.name,
     });
-  }, [isLoaded, salon]);
+  }, [salon, mapRef]);
 
-  return (
-    <div
-      ref={mapRef}
-      style={{ width: "100%", height: "500px", borderRadius: "12px", overflow: "hidden" }}
-    />
-  );
+  return null;
 }

@@ -87,6 +87,7 @@ export default function Home() {
     }
     fetchData();
   }, []);
+  console.log("aaa",allSalons);
 
   // 評価フィルターのハンドラ
   const handleRatingFilterChange = (
@@ -234,6 +235,8 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      
 
       {/* サロン表示部 */}
       <div>

@@ -2,7 +2,7 @@ export interface Salon {
     id: number;
     name: string;
     location: string;
-    images: { image1?: string, image2?: string };
+    images: { image1?: string; image2?: string };
     address: string;
     name_kana: string;
     tags: string[];
@@ -25,14 +25,16 @@ export interface Salon {
     lat: number;
     lon: number;
     averageRatings?: {
-        rating_1: number;
-        rating_2: number;
-        rating_3: number;
-        rating_4: number;
-        rating_5: number;
-        overall: number;
+      rating_1: number;
+      rating_2: number;
+      rating_3: number;
+      rating_4: number;
+      rating_5: number;
+      overall: number;
+      reviewCount?: number;  // ← ここを追加
     } | null;
-}
+  }
+  
 
 export interface Company {
     id: number;

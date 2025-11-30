@@ -79,71 +79,87 @@ export async function getSalonDataWithRatings() {
         return { salonData: null };
     }
 
-    // レビューデータを取得
     const { data: reviewData, error: reviewError } = await client
-        .from('review')
-        .select('*');
+    .from('review')
+    .select('*');
 
-    if (reviewError) {
-        console.error('Error fetching reviews:', reviewError);
-        // レビューがなくてもサロンデータは返す
-        const salonsWithoutRatings = (salonData || []).map(salon => ({
-            ...salon,
-            averageRatings: null
-        }));
-        return { salonData: salonsWithoutRatings };
+if (reviewError) {
+    console.error('Error fetching reviews:', reviewError);
+    // レビューがなくてもサロンデータは返す
+    const salonsWithoutRatings = (salonData || []).map(salon => ({
+        ...salon,
+        averageRatings: {
+            rating_1: null,
+            rating_2: null,
+            rating_3: null,
+            rating_4: null,
+            rating_5: null,
+            overall: null,
+            reviewCount: 0 // 件数を0に
+        }
+    }));
+    return { salonData: salonsWithoutRatings };
+}
+
+// salon_idごとにレビューをグループ化
+const reviewsBySalon = (reviewData || []).reduce((acc, review) => {
+    if (!acc[review.salon_id]) {
+        acc[review.salon_id] = [];
     }
+    acc[review.salon_id].push(review);
+    return acc;
+}, {} as Record<string, any[]>);
 
-    // salon_idごとにレビューをグループ化
-    const reviewsBySalon = (reviewData || []).reduce((acc, review) => {
-        if (!acc[review.salon_id]) {
-            acc[review.salon_id] = [];
-        }
-        acc[review.salon_id].push(review);
-        return acc;
-    }, {} as Record<string, any[]>);
+// 各サロンに平均評価と件数を追加
+const salonsWithRatings = (salonData || []).map(salon => {
+    const salonReviews = reviewsBySalon[salon.id] || [];
 
-    // 各サロンに平均評価を追加
-    const salonsWithRatings = (salonData || []).map(salon => {
-        const salonReviews = reviewsBySalon[salon.id] || [];
-
-        if (salonReviews.length === 0) {
-            return {
-                ...salon,
-                averageRatings: null
-            };
-        }
-
-        // 各評価項目の平均を計算（DBのscore_1~score_5を使用）
-        const averageRatings = {
-            rating_1: calculateAverage(salonReviews, 'score_1'),
-            rating_2: calculateAverage(salonReviews, 'score_2'),
-            rating_3: calculateAverage(salonReviews, 'score_3'),
-            rating_4: calculateAverage(salonReviews, 'score_4'),
-            rating_5: calculateAverage(salonReviews, 'score_5'),
-            overall: 0
-        };
-
-        // 総合評価（5項目の平均）
-        averageRatings.overall =
-            (averageRatings.rating_1 +
-                averageRatings.rating_2 +
-                averageRatings.rating_3 +
-                averageRatings.rating_4 +
-                averageRatings.rating_5) / 5;
-
+    if (salonReviews.length === 0) {
         return {
             ...salon,
-            averageRatings
+            averageRatings: {
+                rating_1: null,
+                rating_2: null,
+                rating_3: null,
+                rating_4: null,
+                rating_5: null,
+                overall: null,
+                reviewCount: 0
+            }
         };
-    });
+    }
 
-    return { salonData: salonsWithRatings };
-}
+    // 各評価項目の平均を計算（DBのscore_1~score_5を使用）
+    const averageRatings = {
+        rating_1: calculateAverage(salonReviews, 'score_1'),
+        rating_2: calculateAverage(salonReviews, 'score_2'),
+        rating_3: calculateAverage(salonReviews, 'score_3'),
+        rating_4: calculateAverage(salonReviews, 'score_4'),
+        rating_5: calculateAverage(salonReviews, 'score_5'),
+        overall: 0,
+        reviewCount: salonReviews.length // 件数を追加
+    };
+
+    // 総合評価（5項目の平均）
+    averageRatings.overall =
+        (averageRatings.rating_1 +
+            averageRatings.rating_2 +
+            averageRatings.rating_3 +
+            averageRatings.rating_4 +
+            averageRatings.rating_5) / 5;
+
+    return {
+        ...salon,
+        averageRatings
+    };
+});
+
+return { salonData: salonsWithRatings };
 
 // 平均値を計算するヘルパー関数
 function calculateAverage(reviews: any[], field: string): number {
     if (reviews.length === 0) return 0;
     const sum = reviews.reduce((acc, review) => acc + (review[field] || 0), 0);
     return sum / reviews.length;
+}
 }
