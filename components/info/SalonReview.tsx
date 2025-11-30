@@ -38,10 +38,11 @@ export default function MainReview() {
   const summary = useMemo(() => {
     if (reviews.length === 0) return { avgStars: 0, roundedStars: 0 };
 
-    // 各レビューの 5段階スコア
+    // 各レビューの 5段階平均スコア
     const starValues = reviews.map((r) => {
-      const total = r.score_1 + r.score_2 + r.score_3 + r.score_4 + r.score_5;
-      return (total / 25) * 5; // 5段階評価に正規化
+      const scores = [r.score_1, r.score_2, r.score_3, r.score_4, r.score_5];
+      const average = scores.reduce((sum, s) => sum + s, 0) / scores.length;
+      return parseFloat(average.toFixed(1)); // 小数第1位まで
     });
 
     const avg = starValues.reduce((sum, v) => sum + v, 0) / starValues.length;
@@ -81,10 +82,10 @@ export default function MainReview() {
       {reviews.length ? (
         <div className="grid gap-6">
           {reviews.map((r) => {
-            const totalScore =
-              r.score_1 + r.score_2 + r.score_3 + r.score_4 + r.score_5;
-            const maxScore = 25;
-            const starsToShow = Math.round((totalScore / maxScore) * 5);
+            // 5段階平均に修正
+            const scores = [r.score_1, r.score_2, r.score_3, r.score_4, r.score_5];
+            const average = scores.reduce((sum, s) => sum + s, 0) / scores.length;
+            const starsToShow = Math.round(average); // 星マーク用
 
             return (
               <div
@@ -106,7 +107,7 @@ export default function MainReview() {
                     />
                   ))}
                   <span className="ml-2 text-gray-600 text-sm">
-                    {totalScore} / {maxScore}
+                    {average.toFixed(1)} / 5
                   </span>
                 </div>
 
