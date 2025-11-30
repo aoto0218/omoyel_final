@@ -2,7 +2,15 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import Script from "next/script";
-import { Salon } from "@/types/salon"; import { forwardRef, useImperativeHandle } from "react";
+import { Salon as BaseSalon } from "@/types/salon";
+import { forwardRef, useImperativeHandle } from "react";
+
+// Salon型を拡張してratingとreviewCountを追加
+interface Salon extends BaseSalon {
+  rating?: number;
+  reviewCount?: number;
+}
+
 type Location = {
   id: number;
   name: string;
@@ -10,8 +18,8 @@ type Location = {
   lat: number;
   lon: number;
   image1?: string;
-  rating?: number;
-  reviewCount?: number;
+  rating?: number;      // 追加
+  reviewCount?: number; // 追加
 };
 
 export type ChildHandle = {
@@ -35,8 +43,8 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
         lat: s.lat,
         lon: s.lon,
         image1: s.images?.image1 || "/fallback.png",
-        rating: s.rating,
-        reviewCount: s.reviewCount,
+        rating: s.rating,           // 追加
+        reviewCount: s.reviewCount, // 追加
       }));
       setLocations(locs);
     }
@@ -47,42 +55,6 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
   const directionsServiceRef = useRef<google.maps.DirectionsService | null>(null);
   const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
   const goalInfoRef = useRef<google.maps.InfoWindow | null>(null);
-
-
-  // 全件 geocode
-  // async function geocodeSalons() {
-  //   const requests = salons.map((salon) =>
-  //     fetch(
-  //       `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-  //         salon.address
-  //       )}&key=${google_apiKey}`
-  //     )
-  //       .then((res) => res.json())
-  //       .then((data) => {
-  //         if (data.status === "OK" && data.results.length > 0) {
-  //           const pos = data.results[0].geometry.location;
-  //           return { 
-  //             id: salon.id,          // ← 必須
-  //             name: salon.name, 
-  //             lat: pos.lat, 
-  //             lng: pos.lng,
-  //             image1: salon.images?.image1 || "/fallback.png",
-  //           } as Location;
-
-
-  //         }
-  //         return null;
-  //       })
-  //   );
-
-  //   const results = await Promise.all(requests);
-  //   const valid = results.filter((v) => v !== null) as Location[];
-  //   setLocations(valid);
-  // }
-
-  // useEffect(() => {
-  //   if (salons.length > 0) geocodeSalons();
-  // }, [salons]);
 
   const initMap = () => {
     if (!window.google) return;
@@ -191,8 +163,6 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
     [map]
   );
 
-
-
   let openedInfoWindow: google.maps.InfoWindow | null = null;
 
   useEffect(() => {
@@ -293,8 +263,6 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
   </div>
 `;
 
-
-
       const headerEl = document.createElement("div");
       headerEl.textContent = loc.name;
       headerEl.style.color = "black";
@@ -337,14 +305,11 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
     });
   }, [locations, map, userLatLng]);
 
-
   useImperativeHandle(ref, () => ({
     initMapFromParent: () => {
-
       initMap();
     },
   }));
-  // console.log("salons in mapmain:", salons);
 
   return (
     <>
@@ -354,7 +319,6 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
         onLoad={initMap}
       />
       <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
-
 
       <style jsx>{`
     .infowindow-header {
@@ -369,5 +333,8 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
     </>
   );
 
-})
+});
+
+Mapmain.displayName = "Mapmain";
+
 export default Mapmain;
