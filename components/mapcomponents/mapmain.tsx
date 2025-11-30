@@ -17,9 +17,6 @@ type Location = {
   lat: number;
   lon: number;
   image1?: string;
-<<<<<<< HEAD
-  rating?: number;
-=======
   averageRatings?: {
     overall: number;
     rating_1: number;
@@ -30,7 +27,6 @@ type Location = {
     reviewCount?: number; // ← 追加
   };
   
->>>>>>> 678a40d (mapエラー修正)
   reviewCount?: number;
 };
 
@@ -45,23 +41,6 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
   const [userLatLng, setUserLatLng] = useState<google.maps.LatLng | null>(null);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
-<<<<<<< HEAD
-  useEffect(() => {
-    if (salons.length > 0) {
-      const locs: Location[] = salons.map(s => ({
-        id: s.id,
-        name: s.name,
-        address: s.address,
-        lat: s.lat,
-        lon: s.lon,
-        image1: s.images?.image1 || "/fallback.png",
-        rating: s.rating,
-        reviewCount: s.reviewCount,
-      }));
-      setLocations(locs);
-    }
-  }, [salons]);
-=======
 
   useEffect(() => {
     if (salons.length > 0) {
@@ -87,7 +66,6 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
 
   console.log(salons);
   // ------------------
->>>>>>> 678a40d (mapエラー修正)
 
   const google_apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const directionsServiceRef = useRef<google.maps.DirectionsService | null>(null);
@@ -524,20 +502,7 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
 
   return (
     <>
-<<<<<<< HEAD
-      <Script
-        src={`https://maps.googleapis.com/maps/api/js?key=${google_apiKey}&language=ja&libraries=geometry`}
-        strategy="afterInteractive"
-        onLoad={() => {
-          setIsScriptLoaded(true);
-        }}
-        onError={(e) => {
-          console.error('Failed to load Google Maps script:', e);
-        }}
-      />
-=======
      
->>>>>>> 678a40d (mapエラー修正)
       <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
 
       <style jsx>{`
