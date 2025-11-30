@@ -1,9 +1,7 @@
 "use client";
 
-import { useRef, useEffect, useState, useCallback } from "react";
-import Script from "next/script";
+import { useRef, useEffect, useState, useCallback, forwardRef, useImperativeHandle } from "react";
 import { Salon as BaseSalon } from "@/types/salon";
-import { forwardRef, useImperativeHandle } from "react";
 
 interface Salon extends BaseSalon {
   rating?: number;
@@ -24,11 +22,12 @@ type Location = {
     rating_3: number;
     rating_4: number;
     rating_5: number;
-    reviewCount?: number; // ← 追加
+    reviewCount?: number;
   };
-  
   reviewCount?: number;
+  rating?: number; // ← ここを追加
 };
+
 
 export type ChildHandle = {
   initMapFromParent: () => void;
@@ -41,89 +40,32 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
   const [userLatLng, setUserLatLng] = useState<google.maps.LatLng | null>(null);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
-
+  // salons -> locations
   useEffect(() => {
     if (salons.length > 0) {
-      const locs: Location[] = salons.map(s => {
-       
-        return {
-          id: s.id,
-          name: s.name,
-          address: s.address,
-          lat: s.lat,
-          lon: s.lon,
-          image1: s.images?.image1 || "/fallback.png",
-          averageRatings: s.averageRatings ?? undefined,
-          reviewCount: s.averageRatings?.reviewCount ?? 0,
-        };
-      });
-  
+      const locs: Location[] = salons.map(s => ({
+        id: s.id,
+        name: s.name,
+        address: s.address,
+        lat: s.lat,
+        lon: s.lon,
+        image1: s.images?.image1 || "/fallback.png",
+        // null の場合は undefined に変換
+        averageRatings: s.averageRatings ? s.averageRatings : undefined,
+        reviewCount: s.averageRatings?.reviewCount ?? 0,
+        rating: s.averageRatings?.overall,
+      }));
       setLocations(locs);
     }
   }, [salons]);
   
-  
 
-  console.log(salons);
-  // ------------------
-
-  const google_apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const directionsServiceRef = useRef<google.maps.DirectionsService | null>(null);
   const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
 
-<<<<<<< HEAD
   const initMap = useCallback(() => {
-    // Google Maps APIが読み込まれているか確認
-    if (typeof window === 'undefined' || !window.google || !window.google.maps) {
-      console.warn('Google Maps API is not loaded yet');
-      return;
-    }
-    
-    if (!mapRef.current) {
-      console.warn('Map container ref is not ready');
-      return;
-=======
+    if (!window.google || !mapRef.current || map) return;
 
-  // 全件 geocode
-  // async function geocodeSalons() {
-  //   const requests = salons.map((salon) =>
-  //     fetch(
-  //       `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-  //         salon.address
-  //       )}&key=${google_apiKey}`
-  //     )
-  //       .then((res) => res.json())
-  //       .then((data) => {
-  //         if (data.status === "OK" && data.results.length > 0) {
-  //           const pos = data.results[0].geometry.location;
-  //           return { 
-  //             id: salon.id,          // ← 必須
-  //             name: salon.name, 
-  //             lat: pos.lat, 
-  //             lng: pos.lng,
-  //             image1: salon.images?.image1 || "/fallback.png",
-  //           } as Location;
-
-
-  //         }
-  //         return null;
-  //       })
-  //   );
-
-  //   const results = await Promise.all(requests);
-  //   const valid = results.filter((v) => v !== null) as Location[];
-  //   setLocations(valid);
-  // }
-
-  // useEffect(() => {
-  //   if (salons.length > 0) geocodeSalons();
-  // }, [salons]);
-
-  const initMap = () => {
-    if (!window.google) return;        // Google Maps が未ロードなら何もしない
-    if (!mapRef.current) return;       // DOMがまだなければ何もしない
-    if (map) return;                   // すでにマップがあるなら何もしない
-  
     const mapInstance = new google.maps.Map(mapRef.current, {
       zoom: 13,
       center: { lat: 35.0116, lng: 135.7681 },
@@ -136,387 +78,103 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
     directionsRendererRef.current = new google.maps.DirectionsRenderer({ map: mapInstance });
 
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((pos) => {
-        const userPos = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
-        setUserLatLng(userPos);
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          const userPos = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+          setUserLatLng(userPos);
 
-        new google.maps.Marker({
-          position: userPos,
-          map: mapInstance,
-          title: "現在地",
-          icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            fillColor: "#115EC3",
-            fillOpacity: 1,
-            strokeColor: "white",
-            strokeWeight: 2,
-            scale: 7,
-          },
-        });
-
-        new google.maps.Circle({
-          strokeColor: "#115EC3",
-          strokeOpacity: 0.2,
-          strokeWeight: 1,
-          fillColor: "#115EC3",
-          fillOpacity: 0.2,
-          map: mapInstance,
-          center: userPos,
-          radius: 100,
-        });
-
-        mapInstance.setCenter(userPos);
-      });
->>>>>>> 678a40d (mapエラー修正)
-    }
-
-    try {
-      const mapInstance = new google.maps.Map(mapRef.current, {
-        zoom: 13,
-        center: { lat: 35.0116, lng: 135.7681 },
-        mapTypeId: google.maps.MapTypeId.ROADMAP,
-      });
-
-      setMap(mapInstance);
-
-      directionsServiceRef.current = new google.maps.DirectionsService();
-      directionsRendererRef.current = new google.maps.DirectionsRenderer({ map: mapInstance });
-
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const userPos = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
-            setUserLatLng(userPos);
-
-            new google.maps.Marker({
-              position: userPos,
-              map: mapInstance,
-              title: "現在地",
-              icon: {
-                path: google.maps.SymbolPath.CIRCLE,
-                fillColor: "#115EC3",
-                fillOpacity: 1,
-                strokeColor: "white",
-                strokeWeight: 2,
-                scale: 7,
-              },
-            });
-
-            new google.maps.Circle({
-              strokeColor: "#115EC3",
-              strokeOpacity: 0.2,
-              strokeWeight: 1,
+          new google.maps.Marker({
+            position: userPos,
+            map: mapInstance,
+            title: "現在地",
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
               fillColor: "#115EC3",
-              fillOpacity: 0.2,
-              map: mapInstance,
-              center: userPos,
-              radius: 100,
-            });
+              fillOpacity: 1,
+              strokeColor: "white",
+              strokeWeight: 2,
+              scale: 7,
+            },
+          });
 
-            mapInstance.setCenter(userPos);
-          },
-          (error) => {
-            console.warn('Geolocation error:', error);
-          }
-        );
-      }
-    } catch (error) {
-      console.error('Error initializing map:', error);
+          new google.maps.Circle({
+            strokeColor: "#115EC3",
+            strokeOpacity: 0.2,
+            strokeWeight: 1,
+            fillColor: "#115EC3",
+            fillOpacity: 0.2,
+            map: mapInstance,
+            center: userPos,
+            radius: 100,
+          });
+
+          mapInstance.setCenter(userPos);
+        },
+        err => console.warn("Geolocation error:", err)
+      );
     }
-  }, []);
+  }, [map]);
 
-  useEffect(() => {
-    if (isScriptLoaded) {
-      initMap();
-    }
-  }, [isScriptLoaded, initMap]);
-
-  let openedInfoWindow: google.maps.InfoWindow | null = null;
-
+  // locations -> markers
   useEffect(() => {
     if (!map || locations.length === 0) return;
+    let openedInfoWindow: google.maps.InfoWindow | null = null;
 
     locations.forEach((loc, i) => {
       try {
         const spot = new google.maps.LatLng(loc.lat, loc.lon);
-
-<<<<<<< HEAD
         const marker = new google.maps.Marker({
           position: spot,
           map,
           title: loc.name,
-=======
-      const marker = new google.maps.Marker({
-        position: spot,
-        map,
-        title: loc.name,
-      });
-
-      const content = `
-  <style>
-    .location-card { 
-      display: flex;
-      flex-direction: row;
-      width: 260px; /* 全体の幅も少し広げる */
-      font-family: sans-serif;
-      color: black; 
-      gap: 8px;
-    }
-
-    .location-card img {
-      width: 120px;   /* ★サイズ変更 */
-      height: 120px;  /* ★サイズ変更 */
-      object-fit: cover;
-      border-radius: 6px;
-    }
-
-    .info-right {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .rating {
-      font-size: 20px;
-      font-weight: bold;
-      margin: 10px 0 5px;
-    }
-
-    .review-count {
-      font-size: 16px;
-      color: #666;
-      margin-bottom: 8px;
-    }
-
-    .button-row {
-      display: flex;
-      gap: 6px; /* ボタン間の隙間 */
-    }
-
-    .btn-small {
-      flex: 1;
-      padding: 6px 6px;
-      font-size: 14px;
-      font-weight: bold;
-      background: #4285F4;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      text-align: center;
-    }
-
-    .btn-detail {
-      background: #34A853;
-    }
-  </style>
-
-  <div class="location-card">
-
-    <img src="${loc.image1 || '/fallback.png'}" />
-
-    <div class="info-right">
-
-      <div>
-       <div class="rating">⭐ ${loc.averageRatings?.overall != null ? loc.averageRatings.overall.toFixed(1) : "0.0"}
-       <div class="review-count">口コミ ${loc.reviewCount ?? 0}件</div>
-
-       </div>
-
-
-      </div>
-
-      <div class="button-row">
-        <a href ="/salon/${loc.id}" class="btn-small btn-detail"">
-          詳細
-        </a>
-
-        <a href="https://www.google.co.jp/maps/dir/現在地/${loc.address}" class="btn-small" target="_blank">
-          経路
-        </a>
-      </div>
-
-    </div>
-
-  </div>
-`;
-
-
-{/* <div class="review-count">口コミ ${loc.reviewCount ?? 0}件</div> */}
-      const headerEl = document.createElement("div");
-      headerEl.textContent = loc.name;
-      headerEl.style.color = "black";
-      headerEl.style.fontWeight = "bold";
-      headerEl.style.padding = "4px 8px";
-
-      const info = new google.maps.InfoWindow({
-        headerContent: headerEl,
-        content,
-        maxWidth: 300,
-        minWidth: 300,
-      });
-
-      marker.addListener("click", () => {
-
-        // ★ 前に開いていた InfoWindow を閉じる
-        if (openedInfoWindow && openedInfoWindow !== info) {
-          openedInfoWindow.close();
-        }
-
-        info.open(map, marker);
-
-        // ★ 開いた InfoWindow を記録
-        openedInfoWindow = info;
-
-        google.maps.event.addListenerOnce(info, "domready", () => {
-          const btn = document.getElementById(`routeBtn-${i}`);
-
-          if (btn) {
-            btn.addEventListener("click", () => {
-              // ★ Google マップへ飛ばす URL
-              const url = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lon}`;
-
-              // ★ アプリ or ブラウザで経路案内を開く
-              window.open(url, "_blank");
-            });
-          }
->>>>>>> 678a40d (mapエラー修正)
         });
 
         const content = `
-          <style>
-            .location-card { 
-              display: flex;
-              flex-direction: row;
-              width: 260px;
-              font-family: sans-serif;
-              color: black; 
-              gap: 8px;
-            }
+<div style="display:flex;gap:8px;font-family:sans-serif;width:260px;">
+  <img src="${loc.image1 || '/fallback.png'}" style="width:120px;height:120px;object-fit:cover;border-radius:6px;" />
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;">
+    <div>
+      <div style="color: black; font-size:20px;font-weight:bold;margin:10px 0 5px;">⭐ ${loc.rating?.toFixed(1) ?? "0.0"}</div>
+      <div style="font-size:16px;color:#666;margin-bottom:8px;">口コミ ${loc.reviewCount ?? 0}件</div>
+    </div>
+    <div style="display:flex;gap:6px;">
+      <a href="/salon/${loc.id}" style="flex:1;padding:6px;font-size:14px;font-weight:bold;background:#34A853;color:white;border-radius:4px;text-align:center;text-decoration:none;">詳細</a>
+      <a href="https://www.google.co.jp/maps/dir/現在地/${encodeURIComponent(loc.address)}" target="_blank" style="flex:1;padding:6px;font-size:14px;font-weight:bold;background:#4285F4;color:white;border-radius:4px;text-align:center;text-decoration:none;">経路</a>
+    </div>
+  </div>
+</div>
+`;
 
-            .location-card img {
-              width: 120px;
-              height: 120px;
-              object-fit: cover;
-              border-radius: 6px;
-            }
+const headerEl = document.createElement("div");
+headerEl.textContent = loc.name;
+headerEl.style.color = "black";        // 文字色を黒
+headerEl.style.textAlign = "center";   // 中央揃え
+headerEl.style.fontWeight = "bold";    
+headerEl.style.fontSize = "16px";
+headerEl.style.marginBottom = "8px";
 
-            .info-right {
-              flex: 1;
-              display: flex;
-              flex-direction: column;
-              justify-content: space-between;
-            }
-
-            .rating {
-              font-size: 20px;
-              font-weight: bold;
-              margin: 10px 0 5px;
-            }
-
-            .review-count {
-              font-size: 16px;
-              color: #666;
-              margin-bottom: 8px;
-            }
-
-            .button-row {
-              display: flex;
-              gap: 6px;
-            }
-
-            .btn-small {
-              flex: 1;
-              padding: 6px 6px;
-              font-size: 14px;
-              font-weight: bold;
-              background: #4285F4;
-              color: white;
-              border: none;
-              border-radius: 4px;
-              cursor: pointer;
-              text-align: center;
-              text-decoration: none;
-            }
-
-            .btn-detail {
-              background: #34A853;
-            }
-          </style>
-
-          <div class="location-card">
-            <img src="${loc.image1 || '/fallback.png'}" alt="${loc.name}" />
-            <div class="info-right">
-              <div>
-                <div class="rating">⭐ ${loc.rating ?? "0.0"}</div>
-                <div class="review-count">口コミ ${loc.reviewCount ?? 0}件</div>
-              </div>
-              <div class="button-row">
-                <a href="/salon/${loc.id}" class="btn-small btn-detail">
-                  詳細
-                </a>
-                <a href="https://www.google.co.jp/maps/dir/現在地/${encodeURIComponent(loc.address)}" class="btn-small" target="_blank">
-                  経路
-                </a>
-              </div>
-            </div>
-          </div>
-        `;
-
-        const headerEl = document.createElement("div");
-        headerEl.textContent = loc.name;
-        headerEl.style.color = "black";
-        headerEl.style.fontWeight = "bold";
-        headerEl.style.padding = "4px 8px";
-
-        const info = new google.maps.InfoWindow({
-          headerContent: headerEl,
-          content,
-          maxWidth: 300,
-          minWidth: 300,
-        });
+const info = new google.maps.InfoWindow({
+  content,
+  maxWidth: 300,
+  headerContent: headerEl, // ここに反映
+});
 
         marker.addListener("click", () => {
-          if (openedInfoWindow && openedInfoWindow !== info) {
-            openedInfoWindow.close();
-          }
+          if (openedInfoWindow && openedInfoWindow !== info) openedInfoWindow.close();
           info.open(map, marker);
           openedInfoWindow = info;
         });
-      } catch (error) {
-        console.error(`Error creating marker for location ${loc.name}:`, error);
+      } catch (err) {
+        console.error(`Marker error for ${loc.name}:`, err);
       }
     });
-  }, [locations, map, userLatLng]);
+  }, [locations, map]);
 
   useImperativeHandle(ref, () => ({
-    initMapFromParent: () => {
-      if (isScriptLoaded) {
-        initMap();
-      } else {
-        console.warn('Script not loaded yet, cannot initialize map');
-      }
-    },
+    initMapFromParent: () => initMap(),
   }));
 
-  return (
-    <>
-     
-      <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
-
-      <style jsx>{`
-        .infowindow-header {
-          background: #fff;
-          color: #000;
-          font-weight: bold;
-          padding: 8px 12px;
-          font-size: 16px;
-          border-radius: 6px 6px 0 0;
-        }
-      `}</style>
-    </>
-  );
+  return <div ref={mapRef} style={{ width: "100%", height: "100%" }} />;
 });
 
 Mapmain.displayName = "Mapmain";
