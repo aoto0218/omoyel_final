@@ -9,13 +9,12 @@ import SalonBasicInfo from '@/components/info/SalonBasicInfo';
 import SalonInfo from '@/components/info/SalonInfo';
 import CompanyBasicInfo from '@/components/info/CompanyBasicInfo';
 import CompanySalary from '@/components/info/CompanySalary';
-import CompanyBenefits from '@/components/info/CompanyBenefits';
 import CompanyLesson from '@/components/info/CompanyLesson';
 import Link from "next/link";
 import Button from "@mui/material/Button";
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import MainReview from '@/components/info/SalonReview';
-type TabType = 'basic' | 'salon' | 'company' | 'salary' | 'benefits' | 'lesson' | 'review';
+type TabType = 'basic' | 'salon' | 'company' | 'salary' | 'lesson' | 'review';
 
 export default function Page() {
     const params = useParams();
@@ -74,8 +73,7 @@ export default function Page() {
         { id: 'basic' as TabType, label: '見学詳細' },
         { id: 'salon' as TabType, label: 'サロンの特徴' },
         { id: 'company' as TabType, label: '企業情報' },
-        { id: 'salary' as TabType, label: '給与・待遇' },
-        { id: 'benefits' as TabType, label: '福利厚生・休暇' },
+        { id: 'salary' as TabType, label: '給与・福利厚生' },
         { id: 'lesson' as TabType, label: '働き方・教育' },
         { id: 'review' as TabType, label: 'レビュー・口コミ' },
     ];
@@ -129,7 +127,6 @@ export default function Page() {
                     {activeTab === 'salon' && <SalonInfo salon={salon} />}
                     {activeTab === 'company' && company && <CompanyBasicInfo company={company} />}
                     {activeTab === 'salary' && company && <CompanySalary company={company} />}
-                    {activeTab === 'benefits' && company && <CompanyBenefits company={company} />}
                     {activeTab === 'lesson' && company && <CompanyLesson company={company} />}
                     {activeTab === 'review' && (
                         <div>

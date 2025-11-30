@@ -22,9 +22,6 @@ type Props = {
     salons: Salon[];
 };
 
-/* ---------------------------------------------------
-   ⭐ 星の表示コンポーネント
---------------------------------------------------- */
 const StarRating = ({
     rating,
     reviewCount,
@@ -71,23 +68,17 @@ const StarRating = ({
     );
 };
 
-/* ---------------------------------------------------
-   📌 サロンカード（一覧画面）
-   → サロンIDごとにレビュー平均を計算して渡す
---------------------------------------------------- */
 export default function SalonCard({ salons }: Props) {
     const [reviewData, setReviewData] = useState<
         Record<number, { rating: number; count: number }>
     >({});
 
-    // ⭐ 全レビューを取得して、サロンIDごとに平均を計算
     useEffect(() => {
         fetch("/api/getReviews")
             .then(async (res) => {
                 const data = await res.json();
                 const reviews: Review[] = data.reviews ?? [];
 
-                // サロンごとに集計
                 const grouped = reviews.reduce((acc, r) => {
                     const total =
                         r.score_1 +
@@ -108,7 +99,6 @@ export default function SalonCard({ salons }: Props) {
                     return acc;
                 }, {} as Record<number, { sum: number; count: number }>);
 
-                // 平均を計算
                 const mapped = Object.fromEntries(
                     Object.entries(grouped).map(([sid, v]) => [
                         Number(sid),
@@ -126,8 +116,6 @@ export default function SalonCard({ salons }: Props) {
 
     const getReviewCount = (salon: Salon) =>
         reviewData[salon.id]?.count || 0;
-
-    /* --------------------------------------------------- */
 
     if (salons.length === 0) {
         return (
@@ -164,11 +152,12 @@ export default function SalonCard({ salons }: Props) {
                                 {salon.name}
                             </h3>
 
-                            {/* ⭐ 平均星評価をここに表示 */}
-                            <StarRating
-                                rating={getRating(salon)}
-                                reviewCount={getReviewCount(salon)}
-                            />
+                            {getReviewCount(salon) > 0 && (
+                                <StarRating
+                                    rating={getRating(salon)}
+                                    reviewCount={getReviewCount(salon)}
+                                />
+                            )}
 
                             <div className="flex items-center text-gray-500 text-sm mt-3">
                                 <MapPin className="w-4 h-4 mr-1" />
