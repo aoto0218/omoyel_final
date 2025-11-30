@@ -134,7 +134,15 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
   <img src="${loc.image1 || '/fallback.png'}" style="width:120px;height:120px;object-fit:cover;border-radius:6px;" />
   <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;">
     <div>
-      <div style="color: black; font-size:20px;font-weight:bold;margin:10px 0 5px;">⭐ ${loc.rating?.toFixed(1) ?? "0.0"}</div>
+    <div>
+    ${loc.rating && loc.rating > 0
+      ? `<div style="color: black; font-size:20px;font-weight:bold;margin:10px 0 5px;">
+           ⭐ ${loc.rating.toFixed(1)}
+         </div>`
+      : `<div style="color:#999;font-size:16px;margin:10px 0 5px;">
+           評価がありません
+         </div>`
+    }
       <div style="font-size:16px;color:#666;margin-bottom:8px;">口コミ ${loc.reviewCount ?? 0}件</div>
     </div>
     <div style="display:flex;gap:6px;">
