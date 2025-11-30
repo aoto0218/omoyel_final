@@ -23,6 +23,7 @@ type Props = {
     // 評価フィルター用の新しいprops
     ratingFilters: RatingFilter[];
     onRatingFilterChange: (category: RatingFilter['category'], minRating: number) => void;
+    matchedCount: number; 
 }
 
 // 評価カテゴリの定義
@@ -49,6 +50,7 @@ export const FilterModal: React.FC<Props> = ({
     onApply,
     ratingFilters,
     onRatingFilterChange,
+    matchedCount, 
 }) => {
     if (!isOpen) return null;
 
@@ -368,11 +370,15 @@ export const FilterModal: React.FC<Props> = ({
                         クリア
                     </button>
                     <button
-                        onClick={onApply}
-                        className="w-full px-6 py-4 bg-amber-300 text-gray-900 font-bold rounded-xl hover:bg-amber-400 transition text-lg"
-                    >
-                        決定
-                    </button>
+    onClick={onApply}
+    className="w-full px-6 py-4 bg-amber-300 text-gray-900 font-bold rounded-xl hover:bg-amber-400 transition text-lg flex items-center justify-center gap-3"
+>
+    決定
+    <span className="text-gray-700 text-lg font-bold">
+        {matchedCount}件
+    </span>
+</button>
+
                 </div>
             </div>
         </div>

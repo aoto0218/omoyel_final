@@ -270,6 +270,7 @@ export default function Home() {
         onApply={applyFilters}
         ratingFilters={ratingFilters}
         onRatingFilterChange={handleRatingFilterChange}
+        matchedCount={filteredSalons.length}  
       />
 
       {/* 相談ボタン部 */}
