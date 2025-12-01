@@ -83,7 +83,7 @@ export default function SalonBasicInfo({ salon }: SalonBasicInfoProps) {
                                 href={salon.meeting_place.startsWith('http') ? salon.meeting_place : '#'}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
+                                className="text-sm text-blue-600 hover:text-blue-700 hover:underline break-all"
                             >
                                 {salon.meeting_place}
                             </a>
@@ -117,7 +117,7 @@ export default function SalonBasicInfo({ salon }: SalonBasicInfoProps) {
                             <Link
                                 href={`https://www.google.co.jp/maps/dir/現在地/${salon.address}`}
                                 target="_blank"
-                                className="inline-block bg-gray-900 text-white px-4 py-2 rounded-md text-sm hover:bg-gray-800 transition break-all"
+                                className="inline-block bg-gray-900 text-white px-4 py-2 rounded-md text-sm hover:bg-gray-800 transition"
                             >
                                 経路を検索する
                             </Link>
