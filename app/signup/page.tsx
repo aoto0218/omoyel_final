@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase_client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/components/Header";
+import { useSearchParams } from "next/navigation";
 
 export default function SignUpPage() {
     const router = useRouter();
@@ -15,6 +16,9 @@ export default function SignUpPage() {
     const [name, setName] = useState("");
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+    const searchParams = useSearchParams();
+    const nextPath = searchParams.get('next') || "/";
 
     const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,9 +40,8 @@ export default function SignUpPage() {
             setErrorMsg(error.message);
             setLoading(false);
         } else {
-            // 登録成功時。メール確認設定がオンの場合は「メールを確認してください」
-            // などのメッセージを表示する方が親切ですが、一旦ログインへ飛ばします。
-            router.push("/login");
+            
+            router.push(`/login?next=${encodeURIComponent(nextPath)}`);
         }
     };
 
@@ -112,7 +115,7 @@ export default function SignUpPage() {
                             すでにアカウントをお持ちですか？
                         </p>
                         <Link
-                            href="/login"
+                            href={nextPath ? `/login?next=${encodeURIComponent(nextPath)}` : '/login'}
                             className="text-blue-500 hover:text-blue-700 font-bold text-sm transition-colors"
                         >
                             ログイン画面に戻る

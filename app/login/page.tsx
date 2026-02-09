@@ -4,13 +4,18 @@ import { createClient } from "@/lib/supabase_client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/components/Header";
+import { useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+
     const router = useRouter();
+    const searchParams = useSearchParams();
+    
+    const nextPath = searchParams.get('next') || "/";
 
     const handleLogin = async () => {
         setIsLoading(true);
@@ -25,7 +30,7 @@ export default function LoginPage() {
             setMessage(error.message);
         } else {
             setMessage("ログインしました");
-            router.push("/");
+            router.push(nextPath);
         }
         setIsLoading(false);
     };
@@ -38,7 +43,7 @@ export default function LoginPage() {
                 <div className="bg-white rounded-3xl shadow-sm p-8 w-full max-w-md">
                     <h2 className="text-2xl font-bold mb-8 text-gray-800">ログイン</h2>
                     
-                    <div className="space-y-4">
+                    <form className="space-y-4">
                         <div>
                             <input
                                 type="email"
@@ -79,7 +84,7 @@ export default function LoginPage() {
                                 </p>
                             </div>
                         )}
-                    </div>
+                    </form>
 
                     {/* フッターリンク */}
                     <div className="mt-8 pt-6 border-t border-gray-100 text-center">
@@ -87,7 +92,7 @@ export default function LoginPage() {
                             アカウントをお持ちではありませんか？
                         </p>
                         <Link
-                            href="/signup"
+                            href={nextPath ? `/signup?next=${encodeURIComponent(nextPath)}` : '/signup'}
                             className="text-blue-500 hover:text-blue-700 font-bold text-sm transition-colors"
                         >
                             新しくアカウントを作成する
