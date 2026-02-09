@@ -32,12 +32,14 @@ export async function updateSession(request: NextRequest) {
 
     if (
         !user &&
-        !request.nextUrl.pathname.startsWith('/login') &&
-        !request.nextUrl.pathname.startsWith('/auth') &&
-        !request.nextUrl.pathname.startsWith('/signup')
+        (
+            request.nextUrl.pathname.startsWith('/mypage') ||
+            request.nextUrl.pathname.startsWith('/review')
+        )
     ) {
         const url = request.nextUrl.clone()
-        url.pathname = '/login'
+        url.pathname ='/login'
+        url.searchParams.set('next', request.nextUrl.pathname)
         return NextResponse.redirect(url)
     }
     return supabaseResponse
