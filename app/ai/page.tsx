@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
+import { createClient } from '@/lib/supabase_client';
 
 interface RecommendedSalon {
     id: number;
@@ -24,6 +25,7 @@ export default function ChatPage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [expandedMessages, setExpandedMessages] = useState<Set<number>>(new Set());
+    const [user, setUser] = useState<any>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
 
@@ -37,6 +39,20 @@ export default function ChatPage() {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    const supabase = createClient();
+
+    useEffect(() => {
+            const getUser = async () => {
+                const { data: { user } } = await supabase.auth.getUser();
+                setUser(user);
+            };
+            getUser();
+            const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+                setUser(session?.user ?? null);
+            });
+            return () => authListener.subscription.unsubscribe();
+        }, [supabase]);
 
     const toggleExpanded = (messageIndex: number) => {
         setExpandedMessages(prev => {
@@ -146,16 +162,52 @@ export default function ChatPage() {
             {/* メッセージエリア */}
             <div className="max-w-2xl mx-auto px-4 pt-6 pb-32">
                 {messages.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
-                        <div className="text-center text-gray-500">
-                            <div className="w-16 h-16 mx-auto mb-4 bg-indigo-100 rounded-full flex items-center justify-center">
-                                <svg className="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                </svg>
+                    <div className="space-y-6">
+                        <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
+                            <div className="text-center text-gray-500">
+                                <div className="w-16 h-16 mx-auto mb-4 bg-indigo-100 rounded-full flex items-center justify-center">
+                                    <svg className="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                </div>
+                                <p className="text-lg font-medium text-gray-900">AIへの相談を入力してください</p>
+                                <p className="text-sm mt-2">例: 〇〇駅から近く、若いスタッフが多いサロンを教えて</p>
                             </div>
-                            <p className="text-lg font-medium text-gray-900">AIへの相談を入力してください</p>
-                            <p className="text-sm mt-2">例: 〇〇駅から近く、若いスタッフが多いサロンを教えて</p>
                         </div>
+                        { !user && (
+                            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
+                                <div className="text-center text-gray-500">
+                                    <div className="w-16 h-16 mx-auto mb-4 bg-indigo-100 rounded-full flex items-center justify-center">
+                                        <svg
+                                            className="w-8 h-8 text-indigo-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            {/* 頭部 */}
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M12 11c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"
+                                            />
+                                            {/* 肩・胴体 */}
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M16 13H8c-2.21 0-4 1.79-4 4v2h16v-2c0-2.21-1.79-4-4-4z"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <Link href="/login?next=/ai" className="mt-4 inline-block px-6 py-3 bg-indigo-400 text-white font-medium rounded-lg shadow-sm hover:bg-indigo-500 transition">
+                                        アカウントにログインして使いやすく
+                                    </Link>
+                                    <p className="text-sm mt-2">アカウントにログインすると、あなたのプロフィールに基づいてAIがサロンを提案します</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="space-y-4">

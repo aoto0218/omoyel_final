@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase_client";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { Header } from "@/components/Header";
 
 export default function MyPage() {
     const supabase = createClient();
@@ -11,9 +13,10 @@ export default function MyPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [profile, setProfile] = useState<any>(null);
     const [favoriteSalons, setFavoriteSalons] = useState<any[]>([]);
+    const router = useRouter();
 
     // 得意メニューの選択肢
-    const specialtyOptions = ["ワンカラー", "ダブルカラー", "ハイライト", "ローライト", "グラデーション", "インナーカラー","寒色系","暖色系","ベリーショート","ショート","ボブ","ミディアム","ロング","縮毛矯正","トリートメント","ボディーパーマ","ニュアンスパーマ","スパイラルパーマ","ツイストパーマ","ツイストスパイラルパーマ","波巻きパーマ","まつげパーマ","まつげエクステ","アイブロウ","編み込み・ブレイズ","ドレッド","アフロ","バリアート","ジェルネイル","ネイルアート","フットネイル","フェイシャル","ボディ","リラクゼーション","脱毛","ヘアメイク","メンズ特化","ナチュラル","着付け","なんでも"];
+    const specialtyOptions = ["ワンカラー", "ダブルカラー", "ハイライト", "ローライト", "グラデーション", "インナーカラー", "寒色系", "暖色系", "ベリーショート", "ショート", "ボブ", "ミディアム", "ロング", "縮毛矯正", "トリートメント", "ボディーパーマ", "ニュアンスパーマ", "スパイラルパーマ", "ツイストパーマ", "ツイストスパイラルパーマ", "波巻きパーマ", "まつげパーマ", "まつげエクステ", "アイブロウ", "編み込み・ブレイズ", "ドレッド", "アフロ", "バリアート", "ジェルネイル", "ネイルアート", "フットネイル", "フェイシャル", "ボディ", "リラクゼーション", "脱毛", "ヘアメイク", "メンズ特化", "ナチュラル", "着付け", "なんでも"];
 
     useEffect(() => {
         fetchProfile();
@@ -70,18 +73,27 @@ export default function MyPage() {
     if (loading && !profile) return <div className="p-8 text-center text-gray-500">読み込み中...</div>;
 
     return (
-        <div className="min-h-screen bg-blue-50 pt-8 pb-12 px-4">
-            <div className="max-w-2xl mx-auto space-y-6">
-                
+        <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-indigo-100">
+            <Header />
+            <div className="max-w-2xl mx-auto space-y-6 mt-5">
                 {/* プロフィールカード */}
                 <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-100">
                     <div className="flex justify-between items-center mb-6">
+                        <div className="flex justify-start">
+                            <button
+                                onClick={() => router.back()}
+                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-100 rounded-full text-gray-500 text-sm font-bold shadow-sm hover:bg-gray-50 transition-all"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                        </div>
                         <h2 className="text-2xl font-bold text-gray-800">マイプロフィール</h2>
-                        <button 
+                        <button
                             onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-                            className={`px-6 py-2 rounded-full font-bold transition-all ${
-                                isEditing ? "bg-green-500 text-white" : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
-                            }`}
+                            className={`px-6 py-2 rounded-full font-bold transition-all ${isEditing ? "bg-green-500 text-white" : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+                                }`}
                         >
                             {isEditing ? "保存する" : "編集する"}
                         </button>
@@ -92,10 +104,10 @@ export default function MyPage() {
                         <div>
                             <label className="text-sm font-bold text-gray-400 block mb-1">名前</label>
                             {isEditing ? (
-                                <input 
+                                <input
                                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-400"
                                     value={profile.name}
-                                    onChange={e => setProfile({...profile, name: e.target.value})}
+                                    onChange={e => setProfile({ ...profile, name: e.target.value })}
                                 />
                             ) : (
                                 <p className="text-lg font-medium text-gray-700">{profile.name}</p>
@@ -106,10 +118,10 @@ export default function MyPage() {
                         <div>
                             <label className="text-sm font-bold text-gray-400 block mb-1">自己紹介</label>
                             {isEditing ? (
-                                <textarea 
+                                <textarea
                                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-400 h-24"
                                     value={profile.bio}
-                                    onChange={e => setProfile({...profile, bio: e.target.value})}
+                                    onChange={e => setProfile({ ...profile, bio: e.target.value })}
                                 />
                             ) : (
                                 <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{profile.bio || "未設定"}</p>
@@ -127,11 +139,10 @@ export default function MyPage() {
                                             key={option}
                                             disabled={!isEditing}
                                             onClick={() => toggleSpecialty(option)}
-                                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
-                                                isChecked 
-                                                    ? "bg-indigo-500 border-indigo-500 text-white" 
+                                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${isChecked
+                                                    ? "bg-indigo-500 border-indigo-500 text-white"
                                                     : "bg-white border-gray-200 text-gray-500"
-                                            } ${!isEditing && "cursor-default opacity-80"}`}
+                                                } ${!isEditing && "cursor-default opacity-80"}`}
                                         >
                                             {option}
                                         </button>
