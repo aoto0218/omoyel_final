@@ -87,7 +87,7 @@ export default function Home() {
     }
     fetchData();
   }, []);
-  console.log("aaa",allSalons);
+  console.log("aaa", allSalons);
 
   // 評価フィルターのハンドラ
   const handleRatingFilterChange = (
@@ -186,8 +186,8 @@ export default function Home() {
             <button
               onClick={() => setShowFilterModal(true)}
               className={`px-6 py-3 rounded-lg shadow-sm hover:shadow-md transition flex items-center gap-2 relative ${hasActiveFilters
-                  ? 'bg-indigo-400 text-white border-2 border-indigo-500'
-                  : 'bg-white text-gray-700 border border-gray-200'
+                ? 'bg-indigo-400 text-white border-2 border-indigo-500'
+                : 'bg-white text-gray-700 border border-gray-200'
                 }`}
             >
               <Filter className="w-5 h-5" />
@@ -236,13 +236,18 @@ export default function Home() {
         </div>
       </div>
 
-      
+
 
       {/* サロン表示部 */}
       <div>
         {viewMode === 'list' ? (
           isLoading ? (
-            <div className="p-8">サロン情報を読み込み中</div>
+            <div className="p-12 flex flex-col items-center justify-center">
+              <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
+              <p className="mt-4 text-gray-600 font-medium animate-pulse">
+                サロンを読み込み中...
+              </p>
+            </div>
           ) : (
             <div className="max-w-2xl mx-auto px-4 pt-6 pb-8">
               <SalonCard salons={filteredSalons} />
@@ -270,7 +275,7 @@ export default function Home() {
         onApply={applyFilters}
         ratingFilters={ratingFilters}
         onRatingFilterChange={handleRatingFilterChange}
-        matchedCount={filteredSalons.length}  
+        matchedCount={filteredSalons.length}
       />
 
       {/* 相談ボタン部 */}

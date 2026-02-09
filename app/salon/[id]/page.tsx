@@ -162,6 +162,11 @@ export default function Page() {
                     </button>
                 </div>
             </div>
+
+            <Link href="/ai" className="fixed bottom-6 right-6 bg-indigo-400 text-white px-6 py-3 rounded-full shadow-lg hover:bg-indigo-500 transition flex items-center gap-2 text-sm font-medium z-50">
+                マッチするサロンをAIに相談
+                <span className="text-xs">💬</span>
+            </Link>
         </div>
     );
 }
