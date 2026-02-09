@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase_client";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -29,8 +30,8 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="p-4">
-            <h2>ログイン</h2>
+        <div className="p-4 max-w-sm mx-auto">
+            <h2 className="text-xl font-bold mb-4">ログイン</h2>
             <input
                 type="email"
                 value={email}
@@ -48,11 +49,25 @@ export default function LoginPage() {
             <button
                 onClick={handleLogin}
                 disabled={isLoading}
-                className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+                className="bg-blue-600 text-white px-4 py-2 rounded w-full mb-4"
             >
                 {isLoading ? "処理中..." : "ログイン"}
             </button>
-            {message && <p className="mt-2">{message}</p>}
+
+            {message && <p className="mt-2 text-sm">{message}</p>}
+
+            <hr className="my-4" />
+            <div className="text-center text-sm">
+                <p className="text-gray-600">
+                    アカウントをお持ちではありませんか？
+                </p>
+                <Link
+                    href="/signup"
+                    className="text-blue-600 hover:underline font-semibold"
+                >
+                    新しくアカウントを作成する
+                </Link>
+            </div>
         </div>
     );
 }

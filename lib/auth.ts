@@ -6,7 +6,6 @@ export async function requireAuth() {
     const { data: { user }, error } = await supabase.auth.getUser();
 
     if (error || !user) {
-        console.log('認証失敗、ログインページにリダイレクト');
         redirect('/login');
     }
 
