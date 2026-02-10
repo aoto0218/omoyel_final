@@ -1,9 +1,9 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Heart } from 'lucide-react'; // Heartを追加
 import { useState, useEffect } from 'react';
-import { getSalonData, getCompanyData } from '@/lib/supabase_client';
+import { getSalonData, getCompanyData, createClient } from '@/lib/supabase_client'; // createClientを追加
 import { Salon, Company } from '@/types/salon';
 import SalonBasicInfo from '@/components/info/SalonBasicInfo';
 import SalonInfo from '@/components/info/SalonInfo';
@@ -14,20 +14,27 @@ import Link from "next/link";
 import Button from "@mui/material/Button";
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import MainReview from '@/components/info/SalonReview';
+
 type TabType = 'basic' | 'salon' | 'company' | 'salary' | 'lesson' | 'review';
 
 export default function Page() {
     const params = useParams();
     const router = useRouter();
     const salonId = Number(params.id);
+    const supabase = createClient();
 
     const [salon, setSalon] = useState<Salon | null>(null);
     const [company, setCompany] = useState<Company | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<TabType>('basic');
 
+    // お気に入り管理用
+    const [isFavorite, setIsFavorite] = useState(false);
+    const [userId, setUserId] = useState<string | null>(null);
+    const [favorites, setFavorites] = useState<number[]>([]);
+
     useEffect(() => {
-        const fetchSalon = async () => {
+        const fetchData = async () => {
             setIsLoading(true);
             const salondata = await getSalonData();
             const companydata = await getCompanyData();
@@ -39,11 +46,55 @@ export default function Page() {
                 setCompany(companydata.companyData?.find((c: Company) => c.id === foundSalon?.company_id) || null);
             }
 
+            // ユーザー情報とお気に入りの取得
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                setUserId(user.id);
+                const { data: profile } = await supabase
+                    .from("profiles")
+                    .select("favorite")
+                    .eq("id", user.id)
+                    .single();
+                if (profile?.favorite) {
+                    setFavorites(profile.favorite);
+                    setIsFavorite(profile.favorite.includes(salonId));
+                }
+            }
+
             setIsLoading(false);
         };
 
-        fetchSalon();
+        fetchData();
     }, [salonId]);
+
+    // お気に入りトグル機能
+    const toggleFavorite = async () => {
+        if (!userId) {
+            alert("お気に入り登録にはログインが必要です");
+            return;
+        }
+
+        const nextFavoriteState = !isFavorite;
+        const newFavorites = nextFavoriteState
+            ? [...favorites, salonId]
+            : favorites.filter(id => id !== salonId);
+
+        // 楽観的アップデート
+        setIsFavorite(nextFavoriteState);
+        setFavorites(newFavorites);
+
+        const { error } = await supabase
+            .from("profiles")
+            .update({ favorite: newFavorites })
+            .eq("id", userId);
+
+        if (error) {
+            console.error(error);
+            // 失敗時は元に戻す
+            setIsFavorite(!nextFavoriteState);
+            setFavorites(favorites);
+        }
+    };
 
     if (isLoading) {
         return (
@@ -79,11 +130,9 @@ export default function Page() {
     ];
 
     return (
-
         <div className="min-h-screen bg-white">
             {/* Fixed Header */}
             <div className="fixed top-0 left-0 right-0 bg-white z-50 border-b border-gray-200">
-                {/* Back Button */}
                 <div className="px-4 py-4">
                     <button
                         onClick={() => router.back()}
@@ -94,14 +143,12 @@ export default function Page() {
                     </button>
                 </div>
 
-                {/* Salon Name - 中央揃え */}
                 <div className="px-4 pb-4 text-center">
                     <h1 className="text-2xl font-bold text-gray-900 leading-tight">
                         {salon.name}
                     </h1>
                 </div>
 
-                {/* Tabs - 中央揃え */}
                 <div className="border-t border-gray-200">
                     <div className="flex overflow-x-auto scrollbar-hide justify-center">
                         {tabs.map((tab) => (
@@ -120,7 +167,7 @@ export default function Page() {
                 </div>
             </div>
 
-            {/* Content with top padding to account for fixed header */}
+            {/* Content */}
             <div className="pt-[180px] pb-32">
                 <div className="max-w-3xl mx-auto px-4">
                     {activeTab === 'basic' && <SalonBasicInfo salon={salon} />}
@@ -130,21 +177,19 @@ export default function Page() {
                     {activeTab === 'lesson' && company && <CompanyLesson company={company} />}
                     {activeTab === 'review' && (
                         <div>
-                            <div>
+                            <div className="flex justify-center mb-6">
                                 <Button className='bg-indigo-400 hover:bg-indigo-500'
-                                    component={Link}           // これで Button が Link に変わる
+                                    component={Link}
                                     href={`/review/page?salonId=${salon.id}`}
                                     variant="contained"
                                     endIcon={<EditNoteIcon />}
                                     sx={{
-                                        backgroundColor: '#6366F1',        // bg-indigo-400
-                                        '&:hover': { backgroundColor: '#4F46E5' } // hover:bg-indigo-500
+                                        backgroundColor: '#6366F1',
+                                        '&:hover': { backgroundColor: '#4F46E5' }
                                     }}
                                 >
-                                    レビューを書く
+                                    ログインしてレビューを書く
                                 </Button>
-
-
                             </div>
                             <div className="py-8">
                                 <MainReview />
@@ -154,19 +199,25 @@ export default function Page() {
                 </div>
             </div>
 
-            {/* Fixed Bottom Button */}
+            {/* Fixed Bottom Action Bar */}
             <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 shadow-lg z-50">
-                <div className="max-w-3xl mx-auto">
-                    <button className="w-full px-8 py-4 bg-indigo-400 text-white font-medium rounded-full hover:bg-indigo-500 transition">
+                <div className="max-w-3xl mx-auto flex gap-3">
+                    {/* お気に入りボタン */}
+                    <button
+                        onClick={toggleFavorite}
+                        className="flex-shrink-0 w-14 h-14 flex items-center justify-center rounded-full border-2 border-gray-100 bg-gray-50 active:scale-90 transition-all"
+                    >
+                        <Heart
+                            className={`w-7 h-7 transition-colors ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"}`}
+                        />
+                    </button>
+
+                    {/* 見学申し込みボタン */}
+                    <button className="flex-1 px-8 py-4 bg-indigo-400 text-white font-bold rounded-full hover:bg-indigo-500 active:scale-[0.98] transition-all text-sm sm:text-base">
                         サロン見学に申し込む(※未実装)
                     </button>
                 </div>
             </div>
-
-            <Link href="/ai" className="fixed bottom-6 right-6 bg-indigo-400 text-white px-6 py-3 rounded-full shadow-lg hover:bg-indigo-500 transition flex items-center gap-2 text-sm font-medium z-50">
-                マッチするサロンをAIに相談
-                <span className="text-xs">💬</span>
-            </Link>
         </div>
     );
 }

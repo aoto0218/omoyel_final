@@ -2,9 +2,10 @@
 
 import { Salon } from "@/types/salon";
 import Image from "next/image";
-import { MapPin, Book, Star } from "lucide-react";
+import { MapPin, Book, Star, Heart } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase_client";
 
 export type Review = {
     id: number;
@@ -69,33 +70,24 @@ const StarRating = ({
 };
 
 export default function SalonCard({ salons }: Props) {
-    const [reviewData, setReviewData] = useState<
-        Record<number, { rating: number; count: number }>
-    >({});
+    const supabase = createClient();
+    const [reviewData, setReviewData] = useState<Record<number, { rating: number; count: number }>>({});
+    const [favorites, setFavorites] = useState<number[]>([]);
+    const [userId, setUserId] = useState<string | null>(null);
 
     useEffect(() => {
+        // レビュー取得処理
         fetch("/api/getReviews")
             .then(async (res) => {
                 const data = await res.json();
                 const reviews: Review[] = data.reviews ?? [];
 
                 const grouped = reviews.reduce((acc, r) => {
-                    const total =
-                        r.score_1 +
-                        r.score_2 +
-                        r.score_3 +
-                        r.score_4 +
-                        r.score_5;
-
+                    const total = r.score_1 + r.score_2 + r.score_3 + r.score_4 + r.score_5;
                     const stars = Math.round((total / 25) * 5);
-
-                    if (!acc[r.salon_id]) {
-                        acc[r.salon_id] = { sum: 0, count: 0 };
-                    }
-
+                    if (!acc[r.salon_id]) acc[r.salon_id] = { sum: 0, count: 0 };
                     acc[r.salon_id].sum += stars;
                     acc[r.salon_id].count += 1;
-
                     return acc;
                 }, {} as Record<number, { sum: number; count: number }>);
 
@@ -105,84 +97,137 @@ export default function SalonCard({ salons }: Props) {
                         { rating: v.sum / v.count, count: v.count },
                     ])
                 );
-
                 setReviewData(mapped);
             })
             .catch((err) => console.error(err));
+
+        // ログインユーザーのお気に入り情報を取得
+        const fetchUserData = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                setUserId(user.id);
+                const { data: profile } = await supabase
+                    .from("profiles")
+                    .select("favorite")
+                    .eq("id", user.id)
+                    .single();
+                if (profile?.favorite) {
+                    setFavorites(profile.favorite);
+                }
+            }
+        };
+        fetchUserData();
     }, []);
 
-    const getRating = (salon: Salon) =>
-        reviewData[salon.id]?.rating || 0;
+    // お気に入りトグル（アラートなし）
+    const toggleFavorite = async (e: React.MouseEvent, salonId: number) => {
+        e.preventDefault();
+        e.stopPropagation();
 
-    const getReviewCount = (salon: Salon) =>
-        reviewData[salon.id]?.count || 0;
+        if (!userId) {
+            alert("お気に入り登録にはログインが必要です");
+            return;
+        }
+
+        const isFavorite = favorites.includes(salonId);
+        const newFavorites = isFavorite
+            ? favorites.filter(id => id !== salonId)
+            : [...favorites, salonId];
+
+        // 楽観的アップデート（UIを先に更新して体感速度を上げる）
+        setFavorites(newFavorites);
+
+        const { error } = await supabase
+            .from("profiles")
+            .update({ favorite: newFavorites })
+            .eq("id", userId);
+
+        if (error) {
+            console.error("Favorite update error:", error);
+            // 失敗した場合は元の状態に戻す
+            setFavorites(favorites);
+        }
+    };
+
+    const getRating = (salon: Salon) => reviewData[salon.id]?.rating || 0;
+    const getReviewCount = (salon: Salon) => reviewData[salon.id]?.count || 0;
 
     if (salons.length === 0) {
         return (
             <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">
-                    条件に合うサロンが見つかりませんでした
-                </p>
+                <p className="text-gray-500 text-lg">条件に合うサロンが見つかりませんでした</p>
             </div>
         );
     }
 
     return (
         <div className="space-y-4">
-            {salons.map((salon) => (
-                <div
-                    key={salon.id}
-                    className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition relative cursor-pointer"
-                >
-                    <Link href={`/salon/${salon.id}`}>
-                        <div className="relative w-full h-64">
-                            <Image
-                                src={
-                                    salon.images?.image1 ||
-                                    "/fallback.png"
-                                }
-                                alt={salon.name}
-                                fill
-                                className="object-cover"
-                            />
-                        </div>
-
-                        <div className="p-5">
-                            <h3 className="text-xl font-bold text-gray-800 mb-2">
-                                {salon.name}
-                            </h3>
-
-                            {getReviewCount(salon) > 0 && (
-                                <StarRating
-                                    rating={getRating(salon)}
-                                    reviewCount={getReviewCount(salon)}
+            {salons.map((salon) => {
+                const isFavorite = favorites.includes(salon.id);
+                return (
+                    <div
+                        key={salon.id}
+                        className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition relative cursor-pointer group"
+                    >
+                        <Link href={`/salon/${salon.id}`}>
+                            <div className="relative w-full h-64">
+                                <Image
+                                    src={salon.images?.image1 || "/fallback.png"}
+                                    alt={salon.name}
+                                    fill
+                                    className="object-cover"
                                 />
-                            )}
-
-                            <div className="flex items-center text-gray-500 text-sm mt-3">
-                                <MapPin className="w-4 h-4 mr-1" />
-                                <span>{salon.location}</span>
+                                {/* お気に入りボタン: アラートなしで即座に切り替え */}
+                                <button
+                                    onClick={(e) => toggleFavorite(e, salon.id)}
+                                    className="absolute top-4 right-4 z-10 p-2.5 bg-white/80 backdrop-blur-md rounded-full shadow-lg active:scale-90 transition-all border border-gray-100"
+                                >
+                                    <Heart
+                                        className={`w-5 h-5 transition-colors ${isFavorite
+                                                ? "text-red-500 fill-red-500"
+                                                : "text-gray-400"
+                                            }`}
+                                    />
+                                </button>
                             </div>
 
-                            {salon.tags?.length > 0 && (
-                                <div className="flex items-center gap-2 mt-4">
-                                    <Book className="w-4 h-4 text-gray-400" />
-                                    <div className="flex gap-2 flex-wrap">
-                                        {salon.tags.map((tag, i) => (
-                                            <span
-                                                key={i}
-                                                className="px-3 py-1 bg-white text-gray-700 text-sm rounded-full border border-gray-300"
-                                            >
-                                                {tag}
-                                            </span>
-                                        ))}
-                                    </div>
+                            <div className="p-5">
+                                <h3 className="text-xl font-bold text-gray-800 mb-2">
+                                    {salon.name}
+                                </h3>
+
+                                {getReviewCount(salon) > 0 && (
+                                    <StarRating
+                                        rating={getRating(salon)}
+                                        reviewCount={getReviewCount(salon)}
+                                    />
+                                )}
+
+                                <div className="flex items-center text-gray-500 text-sm mt-3">
+                                    <MapPin className="w-4 h-4 mr-1" />
+                                    <span>{salon.location}</span>
                                 </div>
-                            )}
-                        </div>
-                    </Link>
-                </div>
-            ))}
+
+                                {salon.tags && salon.tags.length > 0 && (
+                                    <div className="flex items-center gap-2 mt-4">
+                                        <Book className="w-4 h-4 text-gray-400" />
+                                        <div className="flex gap-2 flex-wrap">
+                                            {salon.tags.map((tag, i) => (
+                                                <span
+                                                    key={i}
+                                                    className="px-3 py-1 bg-gray-50 text-gray-600 text-[11px] font-bold rounded-full border border-gray-100"
+                                                >
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </Link>
+                    </div>
+                );
+            })}
         </div>
     );
 }

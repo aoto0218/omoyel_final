@@ -3,6 +3,13 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   const supabase = await createClient();
+  
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const body = await req.json();
 
   const {
@@ -17,6 +24,7 @@ export async function POST(req: Request) {
 
   const { error } = await supabase.from("review").insert([
     {
+      user_id: user.id, 
       salon_id,
       score_1,
       score_2,

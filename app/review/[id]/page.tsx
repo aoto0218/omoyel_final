@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { FaStar } from "react-icons/fa";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 interface ReviewFormProps {
   initialSalonId?: number;
@@ -64,7 +65,10 @@ export default function ReviewForm({ initialSalonId }: ReviewFormProps) {
         setScore5(0);
         setComments("");
 
-        setTimeout(() => setAlert(null), 5000);
+        setTimeout(() => {
+          setAlert(null);
+          router.push(`/salon/${salonId}`);
+        },1500);
 
         if (newReviewId) router.push(`/review/${newReviewId}`);
       } else {
@@ -100,13 +104,13 @@ export default function ReviewForm({ initialSalonId }: ReviewFormProps) {
     <div className="min-h-screen flex flex-col items-center bg-white p-4 sm:p-6">
       <div className="w-full max-w-2xl">
         <div className="mb-4">
-          <button
-            onClick={() => router.back()}
+          <Link
+            href='/'
             className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition text-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             戻る
-          </button>
+          </Link>
         </div>
       </div>
 
