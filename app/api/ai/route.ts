@@ -15,7 +15,26 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function POST(request: Request) {
     try {
-        const { input, conversationHistory } = await request.json();
+        const { input, conversationHistory, userId } = await request.json();
+
+        let userSpecialtyContext = "null";
+        if (userId) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('specialty')
+                .eq('id', userId)
+                .single();
+
+            if (profile?.specialty && profile.specialty.length > 0) {
+                userSpecialtyContext = Array.isArray(profile.specialty)
+                    ? profile.specialty.join(', ')
+                    : profile.specialty;
+            }
+        }
+
+        const userInfoSection = userSpecialtyContext
+            ? `\nなお、ユーザーは${userSpecialtyContext}に興味があるようです。`
+            : "";
 
         // 最初の会話かどうかを判定
         const isFirstMessage = !conversationHistory || conversationHistory.length === 0;
@@ -94,9 +113,9 @@ ${company_context}
 
 回答形式：
 {
-    "recom_text": string, // 質問に対する回答、Markdown形式でわかりやすいよう簡潔に記述（サロン情報や企業情報はここには含めない）
+    "recom_text": string, // 質問に対する回答、Markdown形式でわかりやすいよう3文程度で記述（サロン情報や企業情報はここには含めない）
     "recom_id": number[], // データベースの情報から関連性が高いと判断したサロンのIDの配列、なければ空の配列
-    "quest" : string // アドバイスや追加情報、よりよい回答をするための質問など記載、Markdown形式でわかりやすいよう簡潔に記述
+    "quest" : string // アドバイスや追加情報、よりよい回答をするための質問など記載、Markdown形式でわかりやすいよう3文程度で記述
 }
 
 データベース情報をもとにユーザーの質問に「回答形式」に従って**JSON形式のみで回答**してください。（**必ず'{'から始まって'}'で終わるような形**、**前後に文言は一切含めない**）
@@ -104,6 +123,8 @@ ${company_context}
 IDは'recom_id'以外の箇所（recom_textやquest）では一切記述しないでください。
 データベースにない情報はインターネットで調べた正確な情報で補完してください。
 ユーザーにサロンの詳細情報を案内する際は「**詳細を見るをクリック**してください」と案内してください。
+
+なおユーザーは"${userInfoSection}"に興味・関心があるようです。
 `;
 
         // システムプロンプトを常に最初に追加

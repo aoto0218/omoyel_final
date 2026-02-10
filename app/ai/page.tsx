@@ -94,7 +94,8 @@ export default function ChatPage() {
                 },
                 body: JSON.stringify({
                     input,
-                    conversationHistory // 会話履歴を追加
+                    conversationHistory,
+                    userId:user?.id
                 }),
             });
 
