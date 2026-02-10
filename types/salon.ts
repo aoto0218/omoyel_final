@@ -68,3 +68,17 @@ export interface Company {
     debut: string;
     process: string;
 }
+
+export interface Profile {
+    id: string;
+    name: string;
+    bio: string;
+    favorite: number[];
+    specialty: string[];
+}
+
+export interface FavoriteSalon {
+    id: number[];
+    name: string[];
+    images: string[];
+}

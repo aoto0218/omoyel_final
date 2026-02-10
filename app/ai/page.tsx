@@ -3,10 +3,11 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { Send, User, Sparkles } from 'lucide-react'; // アイコンの統一
 import { createClient } from '@/lib/supabase_client';
+import { Header } from "@/components/Header"; // 既存の共通コンポーネントを参照
 
+// --- Types ---
 interface RecommendedSalon {
     id: number;
     name: string;
@@ -27,9 +28,9 @@ export default function ChatPage() {
     const [expandedMessages, setExpandedMessages] = useState<Set<number>>(new Set());
     const [user, setUser] = useState<any>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const router = useRouter();
 
     const INITIAL_SALON_COUNT = 5;
+    const supabase = createClient();
 
     // 自動スクロール
     const scrollToBottom = () => {
@@ -38,21 +39,20 @@ export default function ChatPage() {
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages]);
+    }, [messages, isLoading]);
 
-    const supabase = createClient();
-
+    // 認証状態の取得
     useEffect(() => {
-            const getUser = async () => {
-                const { data: { user } } = await supabase.auth.getUser();
-                setUser(user);
-            };
-            getUser();
-            const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-                setUser(session?.user ?? null);
-            });
-            return () => authListener.subscription.unsubscribe();
-        }, [supabase]);
+        const getUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+        };
+        getUser();
+        const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+        });
+        return () => authListener.subscription.unsubscribe();
+    }, [supabase]);
 
     const toggleExpanded = (messageIndex: number) => {
         setExpandedMessages(prev => {
@@ -81,7 +81,6 @@ export default function ChatPage() {
         setIsLoading(true);
 
         try {
-            // 会話履歴を構築（現在のメッセージを除く）
             const conversationHistory = messages.map(msg => ({
                 role: msg.role,
                 content: msg.content
@@ -89,289 +88,173 @@ export default function ChatPage() {
 
             const res = await fetch('/api/ai', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     input,
                     conversationHistory,
-                    userId:user?.id
+                    userId: user?.id
                 }),
             });
 
-            const data: {
-                recommend_text: string,
-                recommend_id?: RecommendedSalon[],
-                question?: string,
-                error?: string
-            } = await res.json();
+            const data = await res.json();
 
             if (res.ok) {
-                const assistantMessage: Message = {
+                setMessages(prev => [...prev, {
                     role: 'assistant',
                     content: data.recommend_text,
                     salons: data.recommend_id || [],
                     additionalQuestion: data.question,
                     timestamp: new Date(),
-                };
-                setMessages(prev => [...prev, assistantMessage]);
+                }]);
             } else {
-                const errorMessage: Message = {
-                    role: 'assistant',
-                    content: `エラーが発生しました: ${data.error || '不明なエラー'}`,
-                    timestamp: new Date(),
-                };
-                setMessages(prev => [...prev, errorMessage]);
+                throw new Error(data.error || '不明なエラー');
             }
-        } catch (error) {
-            console.error('API通信エラー:', error);
-            const errorMessage: Message = {
+        } catch (error: any) {
+            setMessages(prev => [...prev, {
                 role: 'assistant',
-                content: 'サーバーとの通信に失敗しました。',
+                content: `エラーが発生しました: ${error.message}`,
                 timestamp: new Date(),
-            };
-            setMessages(prev => [...prev, errorMessage]);
+            }]);
         } finally {
             setIsLoading(false);
         }
-    }, [input, isLoading, messages]); // messagesを依存配列に追加
+    }, [input, isLoading, messages, user]);
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-indigo-100">
-            {/* ヘッダー */}
-            <div className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
-                <div className="max-w-2xl mx-auto px-4 py-4">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => router.back()}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition"
-                        >
-                            <ArrowLeft className="w-6 h-6 text-gray-700" />
-                        </button>
-                        <div>
-                            <h1 className="text-xl font-bold text-gray-900">
-                                サロン相談AIチャット
-                            </h1>
-                            <p className="text-sm text-gray-600">
-                                ※情報の一部にはAIが生成した内容が含まれます
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            {/* 共通のHeaderコンポーネントを利用 */}
+            <Header />
+            <Link href="/" className="absolute top-4 left-4 flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-full text-gray-500 text-sm font-bold shadow-sm hover:bg-gray-50 transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+            </Link>
             {/* メッセージエリア */}
-            <div className="max-w-2xl mx-auto px-4 pt-6 pb-32">
+            <div className="max-w-2xl mx-auto px-4 pt-6 pb-40">
                 {messages.length === 0 ? (
-                    <div className="space-y-6">
-                        <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
-                            <div className="text-center text-gray-500">
-                                <div className="w-16 h-16 mx-auto mb-4 bg-indigo-100 rounded-full flex items-center justify-center">
-                                    <svg className="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                    </svg>
-                                </div>
-                                <p className="text-lg font-medium text-gray-900">AIへの相談を入力してください</p>
-                                <p className="text-sm mt-2">例: 〇〇駅から近く、若いスタッフが多いサロンを教えて</p>
+                    <div className="space-y-6 animate-in fade-in duration-700">
+                        <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200 text-center">
+                            <div className="w-16 h-16 mx-auto mb-4 bg-indigo-100 rounded-full flex items-center justify-center">
+                                <Sparkles className="w-8 h-8 text-indigo-500" />
                             </div>
+                            <p className="text-lg font-bold text-gray-900">AIへの相談をする</p>
+                            <p className="text-sm mt-2 text-gray-500">例: 〇〇駅から近く、パーマが得意なサロンを教えて</p>
                         </div>
-                        { !user && (
-                            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
-                                <div className="text-center text-gray-500">
-                                    <div className="w-16 h-16 mx-auto mb-4 bg-indigo-100 rounded-full flex items-center justify-center">
-                                        <svg
-                                            className="w-8 h-8 text-indigo-400"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                            {/* 頭部 */}
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M12 11c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"
-                                            />
-                                            {/* 肩・胴体 */}
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M16 13H8c-2.21 0-4 1.79-4 4v2h16v-2c0-2.21-1.79-4-4-4z"
-                                            />
-                                        </svg>
-                                    </div>
-                                    <Link href="/login?next=/ai" className="mt-4 inline-block px-6 py-3 bg-indigo-400 text-white font-medium rounded-lg shadow-sm hover:bg-indigo-500 transition">
-                                        アカウントにログインして使いやすく
-                                    </Link>
-                                    <p className="text-sm mt-2">アカウントにログインすると、あなたのプロフィールに基づいてAIがサロンを提案します</p>
-                                </div>
+                        
+                        {!user && (
+                            <div className="bg-indigo-600 rounded-2xl p-6 shadow-lg text-white text-center">
+                                <User className="w-10 h-10 mx-auto mb-3 opacity-80" />
+                                <h3 className="font-bold text-lg mb-2">ログインして体験使いやすく</h3>
+                                <p className="text-sm text-indigo-100 mb-4">プロフィール情報を元に、AIがあなたの興味に合わせた提案をします。</p>
+                                <Link href="/login?next=/ai" className="inline-block w-full py-3 bg-white text-indigo-600 font-bold rounded-xl shadow-md hover:bg-gray-50 transition-all active:scale-95">
+                                    ログイン・新規登録
+                                </Link>
                             </div>
                         )}
                     </div>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         {messages.map((message, index) => (
-                            <div key={index}>
-                                {message.role === 'user' ? (
-                                    /* ユーザーメッセージ */
-                                    <div className="flex justify-end mb-4">
-                                        <div className="max-w-[80%]">
-                                            <div className="bg-indigo-400 text-white rounded-2xl px-4 py-3 shadow-sm">
-                                                <p className="break-words">{message.content}</p>
-                                            </div>
-                                            <div className="text-xs text-right text-gray-500 mt-1 px-2">
-                                                {message.timestamp.toLocaleTimeString('ja-JP', {
-                                                    hour: '2-digit',
-                                                    minute: '2-digit',
-                                                })}
-                                            </div>
+                            <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`max-w-[90%] ${message.role === 'assistant' ? 'w-full' : ''}`}>
+                                    {message.role === 'user' ? (
+                                        <div className="bg-indigo-500 text-white rounded-2xl rounded-tr-none px-5 py-3 shadow-md">
+                                            <p className="whitespace-pre-wrap">{message.content}</p>
                                         </div>
-                                    </div>
-                                ) : (
-                                    <div className="mb-6">
-                                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                                            {/* AIからの回答セクション */}
-                                            <div className="mb-6">
-                                                <h2 className="text-lg font-bold mb-3 text-gray-900 flex items-center gap-2">
-                                                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                                                    AIからの回答
-                                                </h2>
-                                                <div className="text-gray-800 prose max-w-none">
+                                    ) : (
+                                        <div className="bg-white rounded-2xl rounded-tl-none p-6 shadow-sm border border-gray-200">
+                                            <div className="mb-4">
+                                                <div className="flex items-center gap-2 mb-3 text-indigo-600 font-bold">
+                                                    <Sparkles className="w-4 h-4" />
+                                                    <span>AIからの提案</span>
+                                                </div>
+                                                <div className="text-gray-800 prose prose-indigo max-w-none">
                                                     <ReactMarkdown>{message.content}</ReactMarkdown>
                                                 </div>
                                             </div>
 
-                                            {/* サロンリストセクション */}
                                             {message.salons && message.salons.length > 0 && (
-                                                <div className="mt-6 pt-6 border-t border-gray-200">
-                                                    <h3 className="text-base font-bold text-gray-900 mb-4">
-                                                        おすすめのサロン <span className="text-indigo-400">({message.salons.length}件)</span>
+                                                <div className="mt-6 pt-6 border-t border-gray-100">
+                                                    <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">
+                                                        おすすめのサロン ({message.salons.length}件)
                                                     </h3>
-                                                    <div className="space-y-3">
+                                                    <div className="grid gap-3">
                                                         {message.salons
-                                                            .slice(
-                                                                0,
-                                                                expandedMessages.has(index)
-                                                                    ? message.salons.length
-                                                                    : INITIAL_SALON_COUNT
-                                                            )
+                                                            .slice(0, expandedMessages.has(index) ? message.salons.length : INITIAL_SALON_COUNT)
                                                             .map((salon) => (
-                                                                <div
+                                                                <Link
                                                                     key={salon.id}
-                                                                    className="flex justify-between items-center p-4 bg-gray-50 border border-gray-200 rounded-lg hover:shadow-md transition-shadow duration-200"
+                                                                    href={`/salon/${salon.id}`}
+                                                                    className="flex justify-between items-center p-4 bg-gray-50 border border-gray-200 rounded-xl hover:bg-indigo-50 hover:border-indigo-200 transition-all group"
                                                                 >
-                                                                    <span className="font-medium text-gray-900 truncate">{salon.name}</span>
-                                                                    <Link
-                                                                        href={`/salon/${salon.id}`}
-                                                                        className="text-indigo-400 hover:text-indigo-500 font-medium text-sm whitespace-nowrap ml-4"
-                                                                    >
-                                                                        詳細を見る →
-                                                                    </Link>
-                                                                </div>
+                                                                    <span className="font-bold text-gray-800 group-hover:text-indigo-700">{salon.name}</span>
+                                                                    <span className="text-indigo-500 text-sm font-medium">詳細を見る →</span>
+                                                                </Link>
                                                             ))}
                                                     </div>
 
-                                                    {/* もっと見る/閉じるボタン */}
                                                     {message.salons.length > INITIAL_SALON_COUNT && (
-                                                        <div className="mt-4 text-center">
-                                                            <button
-                                                                onClick={() => toggleExpanded(index)}
-                                                                className="px-6 py-2 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg shadow-sm transition border border-gray-200 flex items-center gap-2 mx-auto"
-                                                            >
-                                                                {expandedMessages.has(index) ? (
-                                                                    <>
-                                                                        閉じる
-                                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                                                                        </svg>
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        もっと見る ({message.salons.length - INITIAL_SALON_COUNT}件)
-                                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                                        </svg>
-                                                                    </>
-                                                                )}
-                                                            </button>
-                                                        </div>
+                                                        <button
+                                                            onClick={() => toggleExpanded(index)}
+                                                            className="mt-4 w-full py-2 text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors"
+                                                        >
+                                                            {expandedMessages.has(index) ? "閉じる" : `もっと見る (${message.salons.length - INITIAL_SALON_COUNT}件)`}
+                                                        </button>
                                                     )}
                                                 </div>
                                             )}
 
-                                            {/* 追加の質問セクション */}
                                             {message.additionalQuestion && (
-                                                <div className="mt-6 pt-6 border-t border-gray-200">
-                                                    <div className="text-gray-700 bg-gray-50 p-4 rounded-lg prose max-w-none">
+                                                <div className="mt-6 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+                                                    <div className="text-indigo-800 text-sm italic prose-sm">
                                                         <ReactMarkdown>{message.additionalQuestion}</ReactMarkdown>
                                                     </div>
                                                 </div>
                                             )}
                                         </div>
-
-                                        <div className="text-xs text-left text-gray-500 mt-1 px-2">
-                                            {message.timestamp.toLocaleTimeString('ja-JP', {
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                            })}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-
-                        {/* ローディング表示 */}
-                        {isLoading && (
-                            <div className="flex justify-start">
-                                <div className="bg-white text-gray-800 border border-gray-200 rounded-2xl px-4 py-3 shadow-sm">
-                                    <div className="flex items-center space-x-2">
-                                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                                    )}
+                                    <div className={`text-[10px] text-gray-400 mt-1 px-2 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+                                        {message.timestamp.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
                                     </div>
                                 </div>
                             </div>
-                        )}
+                        ))}
 
+                        {isLoading && (
+                            <div className="flex justify-start">
+                                <div className="bg-white border border-gray-200 px-4 py-3 rounded-2xl shadow-sm flex gap-1">
+                                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" />
+                                </div>
+                            </div>
+                        )}
                         <div ref={messagesEndRef} />
                     </div>
                 )}
             </div>
 
             {/* 入力フォーム */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
+            <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-gray-200 shadow-xl">
                 <div className="max-w-2xl mx-auto px-4 py-4">
                     <form onSubmit={handleSubmit} className="flex gap-3">
                         <input
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder="相談を入力"
+                            placeholder="AIに相談する..."
                             disabled={isLoading}
-                            className="text-gray-900 flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            className="flex-grow px-5 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all text-gray-900 disabled:opacity-50"
                         />
                         <button
                             type="submit"
                             disabled={isLoading || !input.trim()}
-                            className="px-6 py-3 bg-indigo-400 text-white font-medium rounded-lg shadow-sm hover:bg-indigo-500 transition disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+                            className="px-6 py-3 bg-indigo-500 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-600 transition-all disabled:bg-gray-300 flex items-center gap-2 active:scale-95"
                         >
                             {isLoading ? (
-                                <>
-                                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    送信中
-                                </>
+                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                             ) : (
-                                <>
-                                    送信
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                    </svg>
-                                </>
+                                <Send className="w-5 h-5" />
                             )}
                         </button>
                     </form>
