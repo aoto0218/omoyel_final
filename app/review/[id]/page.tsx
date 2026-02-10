@@ -105,7 +105,7 @@ export default function ReviewForm({ initialSalonId }: ReviewFormProps) {
       <div className="w-full max-w-2xl">
         <div className="mb-4">
           <Link
-            href='/'
+            href={`/salon/${salonId}`}
             className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition text-sm"
           >
             <ArrowLeft className="w-4 h-4" />

@@ -134,13 +134,13 @@ export default function Page() {
             {/* Fixed Header */}
             <div className="fixed top-0 left-0 right-0 bg-white z-50 border-b border-gray-200">
                 <div className="px-4 py-4">
-                    <button
-                        onClick={() => router.back()}
+                    <Link
+                        href='/'
                         className="flex items-center gap-1 text-indigo-500 hover:text-indigo-600 transition text-sm"
                     >
                         <ArrowLeft className="w-4 h-4" />
                         戻る
-                    </button>
+                    </Link>
                 </div>
 
                 <div className="px-4 pb-4 text-center">

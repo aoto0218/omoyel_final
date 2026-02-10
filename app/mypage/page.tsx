@@ -4,13 +4,16 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase_client";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
-import { ChevronLeft, X, Sparkles, Heart } from "lucide-react";
+import { ChevronLeft, X, Sparkles, Heart, Trash2, AlertTriangle } from "lucide-react";
 
 export default function MyPage() {
+    const router = useRouter();
     const supabase = createClient();
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [profile, setProfile] = useState<any>(null);
     const [originalProfile, setOriginalProfile] = useState<any>(null);
     const [favoriteSalons, setFavoriteSalons] = useState<any[]>([]);
@@ -57,7 +60,10 @@ export default function MyPage() {
     const fetchProfile = async () => {
         setLoading(true);
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!user) {
+            router.push("/login");
+            return;
+        }
 
         const { data: profileData } = await supabase
             .from("profiles")
@@ -109,7 +115,6 @@ export default function MyPage() {
         setProfile({ ...profile, specialty: next });
     };
 
-    // お気に入り削除機能（スマホ対応：確認ダイアログ付き）
     const handleRemoveFavorite = async (e: React.MouseEvent, salonId: number, salonName: string) => {
         e.preventDefault();
         e.stopPropagation();
@@ -129,8 +134,30 @@ export default function MyPage() {
         if (!error) {
             setProfile({ ...profile, favorite: newFavorites });
             setFavoriteSalons(prev => prev.filter(s => s.id !== salonId));
-        } else {
-            alert("削除に失敗しました。");
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        setLoading(true);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { error: profileError } = await supabase
+                .from("profiles")
+                .delete()
+                .eq("id", user.id);
+
+            if (profileError) throw profileError;
+
+            await supabase.auth.signOut();
+            window.location.href = "/";
+        } catch (error: any) {
+            console.error(error);
+            alert("エラーが発生しました: " + error.message);
+            setShowDeleteModal(false);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -139,24 +166,23 @@ export default function MyPage() {
             <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-indigo-100">
                 <Header />
                 <div className="max-w-2xl mx-auto space-y-6 mt-5 px-4 animate-pulse">
-                    <div className="bg-white rounded-3xl p-8 border border-gray-100">
-                        <div className="h-8 w-40 bg-gray-200 rounded-lg mb-8 mx-auto" />
-                        <div className="space-y-6">
-                            <div className="h-12 bg-gray-100 rounded-xl w-full" />
-                            <div className="h-24 bg-gray-100 rounded-xl w-full" />
+                    {[1, 2].map((i) => (
+                        <div key={i} className="bg-white rounded-3xl p-8 border border-gray-100">
+                            <div className="h-6 w-32 bg-gray-200 rounded mb-4" />
+                            <div className="h-20 bg-gray-100 rounded-xl w-full" />
                         </div>
-                    </div>
+                    ))}
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-indigo-100 pb-12">
+        <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-indigo-100 pb-20">
             <Header />
             <div className="max-w-2xl mx-auto space-y-6 mt-5 px-4">
 
-                {/* プロフィールカード */}
+                {/* 1. プロフィールカード */}
                 <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-100">
                     <div className="flex justify-between items-center mb-8">
                         <Link
@@ -186,7 +212,7 @@ export default function MyPage() {
 
                     <div className="space-y-8">
                         <div>
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2 ml-1">名前</label>
+                            <label className="text-[12px] font-bold text-gray-400 uppercase tracking-widest block mb-2 ml-1">名前</label>
                             {isEditing ? (
                                 <input
                                     className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-400 text-gray-700 transition-all shadow-inner"
@@ -199,7 +225,7 @@ export default function MyPage() {
                         </div>
 
                         <div>
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2 ml-1">自己紹介</label>
+                            <label className="text-[12px] font-bold text-gray-400 uppercase tracking-widest block mb-2 ml-1">自己紹介</label>
                             {isEditing ? (
                                 <textarea
                                     className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-400 h-32 text-gray-700 resize-none transition-all shadow-inner"
@@ -212,7 +238,7 @@ export default function MyPage() {
                         </div>
 
                         <div>
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-4 ml-1">得意メニュー</label>
+                            <label className="text-[12px] font-bold text-gray-400 uppercase tracking-widest block mb-4 ml-1">得意メニュー</label>
                             <div className="space-y-6">
                                 {specialtyGroups.map((group) => {
                                     const selectedInGroup = profile.specialty?.filter((item: string) =>
@@ -222,7 +248,7 @@ export default function MyPage() {
 
                                     return (
                                         <div key={group.category} className="space-y-3">
-                                            <p className="text-[10px] font-bold text-indigo-300 uppercase ml-1 tracking-tighter">{group.category}</p>
+                                            <p className="text-[11px] font-bold text-indigo-300 uppercase ml-1 tracking-tighter">{group.category}</p>
                                             <div className="flex flex-wrap gap-2">
                                                 {isEditing ? (
                                                     group.options.map(option => {
@@ -262,7 +288,7 @@ export default function MyPage() {
                                         <div className="bg-indigo-500 text-white p-2 rounded-xl shadow-md">
                                             <Sparkles className="w-4 h-4" />
                                         </div>
-                                        <span className="text-xs font-bold text-indigo-700 tracking-tight">AIチャットで得意メニューを診断する</span>
+                                        <span className="text-xs font-bold text-indigo-700 tracking-tight">AIチャットで得意メニューを見つける</span>
                                     </div>
                                     <ChevronLeft className="w-4 h-4 text-indigo-300 rotate-180" />
                                 </Link>
@@ -271,12 +297,9 @@ export default function MyPage() {
                     </div>
                 </div>
 
-                {/* お気に入りサロン セクション */}
+                {/* 2. お気に入りサロンセクション */}
                 <div className="bg-white rounded-3xl shadow-sm p-6 sm:p-8 border border-gray-100">
-                    <div className="flex items-center gap-2 mb-6">
-                        <h2 className="text-xl font-bold text-gray-800">お気に入りサロン</h2>
-                    </div>
-
+                    <h2 className="text-xl font-bold text-gray-800 mb-6">お気に入りサロン</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {favoriteSalons.length > 0 ? (
                             favoriteSalons.map(salon => (
@@ -304,12 +327,9 @@ export default function MyPage() {
                                             </div>
                                         </div>
                                     </Link>
-
-                                    {/* お気に入り解除ボタン（スマホでも押しやすいよう常に表示） */}
                                     <button
                                         onClick={(e) => handleRemoveFavorite(e, salon.id, salon.name)}
                                         className="absolute -top-2 -right-2 p-2 bg-white border border-gray-100 rounded-full text-gray-400 hover:text-red-500 active:scale-110 transition-all shadow-md z-10"
-                                        aria-label="削除"
                                     >
                                         <X className="w-4 h-4" />
                                     </button>
@@ -317,12 +337,60 @@ export default function MyPage() {
                             ))
                         ) : (
                             <div className="col-span-full py-12 text-center bg-gray-50/50 rounded-3xl border border-dashed border-gray-200">
-                                <p className="text-gray-400 text-sm italic">お気に入りはまだありません</p>
+                                <p className="text-gray-400 text-sm">お気に入りはまだありません</p>
                             </div>
                         )}
                     </div>
                 </div>
+
+                {/* 3. 設定・退会カード（ここを別カードに分離しました） */}
+                <div className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100">
+                    <div className="flex items-center gap-2 mb-4">
+                        <AlertTriangle className="w-4 h-4 text-gray-300" />
+                        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">アカウント</h2>
+                    </div>
+                    <button
+                        onClick={() => setShowDeleteModal(true)}
+                        className="w-full py-4 rounded-2xl border border-red-50 text-red-400 text-sm font-bold hover:bg-red-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
+                    >
+                        <Trash2 className="w-4 h-4 text-red-300 group-hover:text-red-400 transition-colors" />
+                        アカウント削除
+                    </button>
+                </div>
             </div>
+
+            {showDeleteModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowDeleteModal(false)} />
+                    <div className="relative bg-white w-full max-w-sm rounded-[32px] p-8 shadow-2xl animate-in fade-in zoom-in duration-200">
+                        <div className="text-center">
+                            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <Trash2 className="w-8 h-8" />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-800 mb-2">本当にアカウントを削除しますか？</h3>
+                            <p className="text-sm text-gray-500 leading-relaxed mb-8">
+                                この操作は取り消せません。<br />
+                                お気に入りやプロフィールなどの<br />
+                                すべてのデータが削除されます。
+                            </p>
+                            <div className="space-y-3">
+                                <button
+                                    onClick={handleDeleteAccount}
+                                    className="w-full py-4 bg-red-500 text-white rounded-2xl font-bold text-sm active:scale-95 transition-all shadow-lg shadow-red-200"
+                                >
+                                    アカウントを削除する
+                                </button>
+                                <button
+                                    onClick={() => setShowDeleteModal(false)}
+                                    className="w-full py-4 bg-gray-50 text-gray-500 rounded-2xl font-bold text-sm active:scale-95 transition-all"
+                                >
+                                    キャンセル
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
