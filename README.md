@@ -1,38 +1,111 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 💇‍♀️ 美容師　就活マッチングサイト ホームページ for mobile
+  
+[美容師就活マッチングサイトのホームページを開く🌐](https://omoyel-final.vercel.app)
 
-## Getting Started
+---
+## ✨ 主な機能
+### 📍 サロン検索 & マップ連携
 
-First, run the development server:
+- Google Maps APIを統合し、エリアや現在地から直感的にサロンを探索。
+
+- 地図上での視覚的な配置確認と、詳細なサロン情報の絞り込み。
+
+### 🔍 高度な多条件フィルタリング（詳細絞り込み）
+
+- 「給与・休日」などの待遇面から、「教育体制」「店の雰囲気」「客層」といった美容師特有のこだわり条件まで、詳細なパラメータで検索可能。
+
+- 大量のデータから、ユーザーの「譲れない条件」に合致するサロンを瞬時に抽出します。
+
+### 💬 スムーズなコンタクト機能
+
+- 気になったサロンへ直接アプローチが可能。
+
+- 美容師とオーナーを繋ぐシンプルで無駄のないコミュニケーション。
+
+### ⭐ リアルなレビューシステム
+
+- 実際に働く環境や雰囲気を可視化。
+
+- 信頼性の高い口コミに基づいたミスマッチのない就職活動をサポート。
+
+### 🤖 AIチャット・サジェスト (Gemini API 活用)
+
+- ユーザーの希望条件や価値観をAIが分析。
+
+- 膨大なデータから「あなたに本当に合うサロン」をパーソナライズして提案。
+
+---
+
+## 技術スタック  
+  
+### Frontend
+
+- React / Next.js (TypeScript) 🚀
+
+- Tailwind CSS 🎨
+
+### Backend & Database
+
+- Supabase ⚡️ (Authentication, Database, Storage)
 
 
+### AI & APIs
+
+- Gemini API ♊️ (AI-chat)
+
+- Google Maps API 📍 (Location services & Maps integration)
+
+### Infrastructure & Tools
+
+- Deployment: Vercel ▲
+- 
+- Package Manager: npm 📦
+
+   
+---
+   
+
+## セットアップ
+開発環境の起動
 
 ```bash
+# 依存関係のインストール
+npm install
+
+# ローカルサーバーの起動
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## プロジェクト構造
+```bash
+omoyel/              
+├── public/                 # ロゴ、アイコン、背景画像などの静的資産
+├── src/
+│   ├── app/                # 【Next.js App Router】ルーティングとページ
+│   │   ├── (auth)/         # ログイン・新規登録（グループ化）
+│   │   ├── (dashboard)/    # ユーザー用・美容室用管理画面
+│   │   ├── salons/         # 美容室検索・一覧・詳細ページ
+│   │   ├── api/            # API Route (Supabaseとの連携など)
+│   │   ├── layout.tsx      # 全体共通のレイアウト
+│   │   └── page.tsx        # トップページ
+│   ├── components/         # 再利用可能なUIパーツ
+│   │   ├── ui/             # shadcn/ui などの基本部品（Button, Input等）
+│   │   ├── common/         # Header, Footer, Sidebar
+│   │   ├── salon/          # 美容室カード、検索フォーム
+│   │   └── auth/           # ログインフォーム、認証ガード
+│   ├── hooks/              # カスタムフック（useAuth, useGoogleMaps等）
+│   ├── lib/                # 外部ライブラリの設定（supabaseClient.ts, utils.ts）
+│   ├── services/           # データ取得ロジック（API叩く処理をまとめる）
+│   ├── types/              # TypeScriptの型定義ファイル
+│   └── store/              # 状態管理（Zustand や Jotai を使う場合）              # MIT License
+├── README.md               # プロジェクト説明書
+└── package.json            # 依存関係管理
+```
+---
+## ライセンス
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+© 2026 Omoyel Project. All rights reserved.
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
