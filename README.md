@@ -1,5 +1,5 @@
-# 💇‍♀️ 美容師　就活マッチングサイト ホームページ　(Mobile First)
-  
+# 💇‍♀️ 美容師　就活マッチングサイト モバイル　WEBアプリ　
+
 [美容師就活マッチングサイトのホームページを開く(Mobile First)🌐](https://omoyel-final.vercel.app)
 
 ---
