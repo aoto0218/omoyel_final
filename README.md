@@ -97,9 +97,8 @@ omoyel/
 │   │   └── auth/           # ログインフォーム、認証ガード
 │   ├── hooks/              # カスタムフック（useAuth, useGoogleMaps等）
 │   ├── lib/                # 外部ライブラリの設定（supabaseClient.ts, utils.ts）
-│   ├── services/           # データ取得ロジック（API叩く処理をまとめる）
-│   ├── types/              # TypeScriptの型定義ファイル
-│   └── store/              # 状態管理（Zustand や Jotai を使う場合）              # MIT License
+│   ├── services/           # データ取得ロジック（API叩く処理をまとめる）              
+│   └──types/               # TypeScriptの型定義ファイル
 ├── README.md               # プロジェクト説明書
 └── package.json            # 依存関係管理
 ```
