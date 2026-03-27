@@ -58,7 +58,6 @@
 ### Infrastructure & Tools
 
 - Deployment: Vercel ▲
-- 
 - Package Manager: npm 📦
 
    
