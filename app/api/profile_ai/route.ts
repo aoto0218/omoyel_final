@@ -1,9 +1,16 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY!);
-
 export async function POST(req: Request) {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY;
+    if (!apiKey) {
+        return NextResponse.json(
+            { error: "必要な環境変数 NEXT_PUBLIC_GOOGLE_AI_API_KEY を設定してください。" },
+            { status: 500 }
+        );
+    }
+    const genAI = new GoogleGenerativeAI(apiKey);
+
     try {
         const { messages } = await req.json();
 

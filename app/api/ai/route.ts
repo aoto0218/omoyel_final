@@ -1,19 +1,21 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { createClient } from "@supabase/supabase-js";
-
-const apiKey = process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY;
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-if (!apiKey || !supabaseUrl || !supabaseServiceKey) {
-    throw new Error("必要な環境変数を設定してください。SUPABASE_URL, SUPABASE_SERVICE_KEY, NEXT_PUBLIC_GOOGLE_AI_API_KEY");
-}
-
-const genAI = new GoogleGenerativeAI(apiKey);
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+import { createClient } from "@/utils/supabase/server";
 
 export async function POST(request: Request) {
+    const supabase = await createClient();
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY;
+
+    if (!apiKey) {
+        return NextResponse.json(
+            { error: "必要な環境変数 NEXT_PUBLIC_GOOGLE_AI_API_KEY を設定してください。" },
+            { status: 500 }
+        );
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+
+
     try {
         const { input, conversationHistory, userId } = await request.json();
 
@@ -47,7 +49,7 @@ export async function POST(request: Request) {
             .from('salons')
             .select('*');
 
-        const salon_context = relatedSalons && relatedSalons.length > 0 ? relatedSalons.map((salon) => {
+        const salon_context = relatedSalons && relatedSalons.length > 0 ? relatedSalons.map((salon: any) => {
             const tagsString = Array.isArray(salon.tags) ? salon.tags.join(', ') : (salon.tags || '情報なし');
             return `
         ID: ${salon.id}
@@ -67,7 +69,7 @@ export async function POST(request: Request) {
             .from('companies')
             .select('*');
 
-        const company_context = relatedCompany && relatedCompany.length > 0 ? relatedCompany.map((company) => {
+        const company_context = relatedCompany && relatedCompany.length > 0 ? relatedCompany.map((company: any) => {
             const hrString = Array.isArray(company.hr) ? company.hr.join(', ') : (company.hr || '情報なし');
             const experienceString = Array.isArray(company.experience) ? company.experience.join(', ') : (company.experience || '情報なし');
             const eventString = Array.isArray(company.event) ? company.event.join(', ') : (company.event || '情報なし');
@@ -181,8 +183,8 @@ IDは'recom_id'以外の箇所（recom_textやquest）では一切記述しな�
             .in('id', geminiResponse.recom_id);
 
         const recommend_id = geminiResponse.recom_id
-            .map(id => {
-                const salon = allSalons?.find(s => s.id === id);
+            .map((id: number) => {
+                const salon = allSalons?.find((s: any) => s.id === id);
                 return salon ? { id: salon.id, name: salon.name } : null;
             })
             .filter((item): item is { id: number, name: string } => item !== null);

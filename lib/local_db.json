@@ -1,0 +1,631 @@
+{
+  "salons": [
+    {
+      "id": 1,
+      "name": "AFLOAT TOKYO (アフロート トウキョウ)",
+      "name_kana": "アフロートトウキョウ",
+      "location": "東京都",
+      "address": "東京都中央区銀座2-5-18 銀座セゾンビル4F",
+      "images": {
+        "image1": "/salon_image/1-1.png",
+        "image2": "/salon_image/1-2.png"
+      },
+      "tags": [
+        "ダブルカラー",
+        "縮毛矯正",
+        "トリートメント"
+      ],
+      "imageType": "salon",
+      "visit_schedule": "毎週水曜・金曜 10:00〜12:00",
+      "duration": "約2時間",
+      "flow": "サロン見学 → 会社説明 → 代表者座談会",
+      "guideStaff": "採用担当・店長",
+      "contact": "afloat-recruit@example.com",
+      "instagram": "@afloat_official",
+      "meeting_place": "銀座セゾンビル4F フロント前",
+      "staff_gender_ratio": "50:50",
+      "staff_age_group": "20代〜30代中心",
+      "atmosphere": "明るく活気にあふれ、トレンドを発信し続ける環境",
+      "customer_gender_ratio": "20:80",
+      "customer_age_group": "20代前半〜30代後半",
+      "international_customer_frequency": "ときどき",
+      "company_id": 1,
+      "featured": true,
+      "lat": 35.6738,
+      "lon": 139.7656
+    },
+    {
+      "id": 5,
+      "name": "LIPPS hair 渋谷 (リップス ヘアー シブヤ)",
+      "name_kana": "リップスヘアーシブヤ",
+      "location": "東京都",
+      "address": "東京都渋谷区宇田川町36-19 名畑ビル2F",
+      "images": {
+        "image1": "/salon_image/5-1.png",
+        "image2": "/salon_image/5-2.png"
+      },
+      "tags": [
+        "メンズ特化",
+        "スパイラルパーマ",
+        "ツイストパーマ"
+      ],
+      "imageType": "salon",
+      "visit_schedule": "毎週火曜・木曜 11:00〜13:00",
+      "duration": "約1.5時間",
+      "flow": "サロン見学 → メンズスタイリング体験 → 先輩トーク",
+      "guideStaff": "スタイリスト・店長",
+      "contact": "lipps-recruit@example.com",
+      "instagram": "@lipps_official",
+      "meeting_place": "名畑ビル2F 受付",
+      "staff_gender_ratio": "70:30",
+      "staff_age_group": "20代中心",
+      "atmosphere": "メンズ特化の熱気があり、明るくエネルギッシュな空間",
+      "customer_gender_ratio": "90:10",
+      "customer_age_group": "10代後半〜20代後半",
+      "international_customer_frequency": "ときどき",
+      "company_id": 2,
+      "featured": true,
+      "lat": 35.662,
+      "lon": 139.6975
+    },
+    {
+      "id": 6,
+      "name": "OCEAN TOKYO (オーシャントーキョー)",
+      "name_kana": "オーシャントーキョー",
+      "location": "東京都",
+      "address": "東京都渋谷区神宮前5-27-7 ALIA原宿ビル4F",
+      "images": {
+        "image1": "/salon_image/6-1.png",
+        "image2": "/salon_image/6-2.png"
+      },
+      "tags": [
+        "メンズ特化",
+        "ダブルカラー",
+        "ツイストスパイラルパーマ"
+      ],
+      "imageType": "salon",
+      "visit_schedule": "毎週木曜 12:00〜14:00",
+      "duration": "約2時間",
+      "flow": "店舗見学 → スタイリング実演見学 → フリートーク",
+      "guideStaff": "代表スタイリスト・人事担当",
+      "contact": "ocean-recruit@example.com",
+      "instagram": "@oceantokyonet",
+      "meeting_place": "ALIA原宿ビル4F 受付",
+      "staff_gender_ratio": "80:20",
+      "staff_age_group": "20代中心",
+      "atmosphere": "パッションに満ち、チームワークが抜群に良い職場",
+      "customer_gender_ratio": "95:5",
+      "customer_age_group": "10代半ば〜20代後半",
+      "international_customer_frequency": "ときどき",
+      "company_id": 3,
+      "featured": true,
+      "lat": 35.6652,
+      "lon": 139.7042
+    },
+    {
+      "id": 7,
+      "name": "SHIMA HARAJUKU (シマ ハラジュク)",
+      "name_kana": "シマハラジュク",
+      "location": "東京都",
+      "address": "東京都渋谷区神宮前1-10-30",
+      "images": {
+        "image1": "/salon_image/7-1.png",
+        "image2": "/salon_image/7-2.png"
+      },
+      "tags": [
+        "ダブルカラー",
+        "インナーカラー",
+        "ロング"
+      ],
+      "imageType": "salon",
+      "visit_schedule": "毎週水曜 17:00〜18:30",
+      "duration": "約1.5時間",
+      "flow": "サロン案内 → トレンドデザイン解説 → 質疑応答",
+      "guideStaff": "ディレクター・アシスタント",
+      "contact": "shima-recruit@example.com",
+      "instagram": "@shima_official",
+      "meeting_place": "SHIMA原宿店 フロント前",
+      "staff_gender_ratio": "40:60",
+      "staff_age_group": "20代〜30代中心",
+      "atmosphere": "ファッショナブルで洗練された、トレンド感溢れるサロン",
+      "customer_gender_ratio": "10:90",
+      "customer_age_group": "10代後半〜20代後半",
+      "international_customer_frequency": "よくある",
+      "company_id": 4,
+      "featured": false,
+      "lat": 35.6698,
+      "lon": 139.7028
+    },
+    {
+      "id": 8,
+      "name": "MINX 原宿店 (ミンクス ハラジュクテン)",
+      "name_kana": "ミンクスハラジュクテン",
+      "location": "東京都",
+      "address": "東京都渋谷区神宮前1-13-14",
+      "images": {
+        "image1": "/salon_image/8-1.png",
+        "image2": "/salon_image/8-2.png"
+      },
+      "tags": [
+        "ワンカラー",
+        "トリートメント",
+        "ボブ"
+      ],
+      "imageType": "salon",
+      "visit_schedule": "毎週金曜 10:00〜11:30",
+      "duration": "約1.5時間",
+      "flow": "店舗見学 → カット教育説明 → 先輩質問コーナー",
+      "guideStaff": "教育担当・スタイリスト",
+      "contact": "minx-recruit@example.com",
+      "instagram": "@minx_hair_official",
+      "meeting_place": "原宿店レセプション",
+      "staff_gender_ratio": "45:55",
+      "staff_age_group": "20代〜40代",
+      "atmosphere": "技術への意識が高く、プロフェッショナルで落ち着いた空間",
+      "customer_gender_ratio": "30:70",
+      "customer_age_group": "20代〜40代前半",
+      "international_customer_frequency": "ときどき",
+      "company_id": 5,
+      "featured": false,
+      "lat": 35.6705,
+      "lon": 139.7032
+    },
+    {
+      "id": 9,
+      "name": "GARDEN TOKYO (ガーデン トウキョウ)",
+      "name_kana": "ガーデントウキョウ",
+      "location": "東京都",
+      "address": "東京都中央区銀座7-9-15 GINZA gCUBE 11F",
+      "images": {
+        "image1": "/salon_image/9-1.png",
+        "image2": "/salon_image/9-2.png"
+      },
+      "tags": [
+        "ナチュラル",
+        "ボブ",
+        "ミディアム"
+      ],
+      "imageType": "salon",
+      "visit_schedule": "毎週水曜 11:00〜12:30",
+      "duration": "約1.5時間",
+      "flow": "サロン案内 → ライフスタイル提案解説 → 先輩対談",
+      "guideStaff": "マネージャー・人事担当",
+      "contact": "garden-recruit@example.com",
+      "instagram": "@garden_official",
+      "meeting_place": "GINZA gCUBE 11F 受付",
+      "staff_gender_ratio": "35:65",
+      "staff_age_group": "20代〜30代前半",
+      "atmosphere": "アットホームで穏やか、自然体で働ける明るい空間",
+      "customer_gender_ratio": "25:75",
+      "customer_age_group": "20代前半〜40代前半",
+      "international_customer_frequency": "ときどき",
+      "company_id": 6,
+      "featured": false,
+      "lat": 35.6695,
+      "lon": 139.7618
+    },
+    {
+      "id": 10,
+      "name": "ALBUM SHIBUYA (アルバム シブヤ)",
+      "name_kana": "アルバムシブヤ",
+      "location": "東京都",
+      "address": "東京都渋谷区神南1-20-9 コアビル4F",
+      "images": {
+        "image1": "/salon_image/10-1.png",
+        "image2": "/salon_image/10-2.png"
+      },
+      "tags": [
+        "ダブルカラー",
+        "インナーカラー",
+        "縮毛矯正"
+      ],
+      "imageType": "salon",
+      "visit_schedule": "毎週火曜・水曜 10:00〜12:00",
+      "duration": "約2時間",
+      "flow": "店舗見学 → SNS活用セミナー見学 → 質疑応答",
+      "guideStaff": "トップスタイリスト・採用広報",
+      "contact": "album-recruit@example.com",
+      "instagram": "@album_hair",
+      "meeting_place": "コアビル4F フロント",
+      "staff_gender_ratio": "60:40",
+      "staff_age_group": "20代中心",
+      "atmosphere": "スピード感があり、SNSやトレンドに敏感な最先端の職場",
+      "customer_gender_ratio": "15:85",
+      "customer_age_group": "10代後半〜20代半ば",
+      "international_customer_frequency": "よくある",
+      "company_id": 7,
+      "featured": false,
+      "lat": 35.6618,
+      "lon": 139.7005
+    }
+  ],
+  "companies": [
+    {
+      "id": 1,
+      "name": "株式会社AFLOAT",
+      "hr": [
+        "アシスタント",
+        "スタイリスト",
+        "レセプション"
+      ],
+      "recruit": "美容専門学校卒業見込み者、または中途採用者",
+      "experience": [
+        "シャンプー体験",
+        "モデルカット見学",
+        "トリートメント体験"
+      ],
+      "provided": "一部支給（上限2万円/月）",
+      "salons": "AFLOAT各店",
+      "event": [
+        "ヘアショー",
+        "撮影会",
+        "新年会・忘年会"
+      ],
+      "expansion": "都内主要エリア（青山・表参道・銀座）およびフランチャイズ展開",
+      "appeal": "有名モデルやタレント多数来店。最先端の技術が学べます。",
+      "point": "業界トップレベルの技術力と集客力。自分自身もメディアに露出する機会が多数。",
+      "customer": "トレンドに敏感で美意識の高いお客様が中心。",
+      "staff": "向上心が高く、お互いに高め合える明るいスタッフが多数在籍。",
+      "start_salary": "20万円〜",
+      "assist_salary": "20万〜22万円 + 技術手当",
+      "stylist_salary": "25万〜50万円 + 歩合手当",
+      "manager_salary": "50万〜80万円",
+      "area_salary": "80万円〜120万円",
+      "ten_million": true,
+      "bonus": "年2回（業績に応じて支給）",
+      "benefits": "社会保険完備、交通費支給、社員旅行、外部講習費補助",
+      "insurance": "整容国保、厚生年金、雇用保険、労災保険",
+      "vacation_system": "完全週休2日制（火曜定休 + シフト休1日）",
+      "paid_holiday": "有給休暇（初年度10日）、夏季・冬季休暇各5日",
+      "weekends_off": "冠婚葬祭などの場合のみ応相談",
+      "shift": "月単位のシフト制",
+      "lesson": "週2回（水曜・金曜朝）および自主練習",
+      "item": [
+        "カット",
+        "カラー",
+        "パーマ",
+        "メイク",
+        "接客・マナー"
+      ],
+      "debut": "平均2.5年〜3年",
+      "process": "書類選考 → 1次面接 → 技術審査（ワインディング等） → 最終面接"
+    },
+    {
+      "id": 2,
+      "name": "株式会社LIPPS",
+      "hr": [
+        "アシスタント",
+        "スタイリスト"
+      ],
+      "recruit": "美容専門学校卒業見込み者",
+      "experience": [
+        "メンズスタイリング体験",
+        "サロンワーク見学",
+        "カットブロー見学"
+      ],
+      "provided": "全額支給（最大2.5万円/月）",
+      "salons": "LIPPS 各店",
+      "event": [
+        "社内コンテスト",
+        "スタイリングライブ",
+        "BBQ大会"
+      ],
+      "expansion": "メンズトレンド発信店舗を全国主要都市に展開",
+      "appeal": "メンズヘアのトレンドを牽引するトップサロン。",
+      "point": "メンズカットの最高峰の技術を習得でき、SNSフォロワー獲得やモデルとの関わりも深いです。",
+      "customer": "男性顧客が9割。圧倒的なメンズ支持率を誇ります。",
+      "staff": "若くてエネルギッシュ、ファッションに関心の高いスタッフたち。",
+      "start_salary": "21万円〜",
+      "assist_salary": "21万〜23万円 + 技術昇給",
+      "stylist_salary": "27万〜60万円 + 歩合",
+      "manager_salary": "60万〜100万円",
+      "area_salary": "100万円〜",
+      "ten_million": true,
+      "bonus": "年1回（決算賞与）",
+      "benefits": "社会保険完備、家賃補助（社内規定あり）、研修制度、道具貸出",
+      "insurance": "健康保険、厚生年金、雇用保険、労災保険",
+      "vacation_system": "完全週休2日制（毎週月曜 + 平日1日）",
+      "paid_holiday": "有給休暇（法定通り）、お正月休み5日",
+      "weekends_off": "不可",
+      "shift": "完全週休2日シフト制",
+      "lesson": "毎週火曜夜、および随時オンライン講習",
+      "item": [
+        "メンズカット",
+        "束感スタイリング",
+        "特殊パーマ",
+        "SNSセルフブランディング"
+      ],
+      "debut": "平均2年",
+      "process": "書類選考 → 1次集団面接 → サロン実習（2日間） → 最終役員面接"
+    },
+    {
+      "id": 3,
+      "name": "株式会社OCEAN TOKYO",
+      "hr": [
+        "アシスタント"
+      ],
+      "recruit": "新卒美容学校卒業予定者",
+      "experience": [
+        "スタイリング見学",
+        "スタッフ座談会"
+      ],
+      "provided": "全額支給",
+      "salons": "OCEAN TOKYO各店",
+      "event": [
+        "ヘアライブ",
+        "社内運動会",
+        "社員旅行"
+      ],
+      "expansion": "原宿・渋谷を中心に大阪、福岡など主要エリア展開",
+      "appeal": "カリスマスタイリスト高木琢也氏が率いる、日本一有名なメンズサロン。",
+      "point": "圧倒的な集客力とブランド力。日本で最も「有名になりたい」美容師が集まる場所。",
+      "customer": "全国から来店するメンズのお客様が圧倒的多数。",
+      "staff": "パッションがあり、夢を追いかける熱い熱量を持つスタッフたち。",
+      "start_salary": "20.5万円〜",
+      "assist_salary": "20.5万〜22万円",
+      "stylist_salary": "30万〜200万円（指名売上による高率歩合）",
+      "manager_salary": "100万円〜",
+      "area_salary": "150万円〜",
+      "ten_million": true,
+      "bonus": "年2回（指名売上インセンティブ連動）",
+      "benefits": "社会保険完備、各種手当、海外研修、制服（衣装）手当",
+      "insurance": "社会保険完備（健康保険、厚生年金、雇用・労災保険）",
+      "vacation_system": "隔週週休2日制（月曜定休 + 第1・第3火曜 + シフト休）",
+      "paid_holiday": "夏季休暇（7日）、冬季休暇（5日）、慶弔休暇",
+      "weekends_off": "不可",
+      "shift": "シフト制",
+      "lesson": "個別カリキュラムによる徹底自主指導",
+      "item": [
+        "メンズカット",
+        "ヘアセット",
+        "アイロンワーク",
+        "カウンセリング力"
+      ],
+      "debut": "平均2.5年",
+      "process": "書類選考 → 1次自己PR面接 → グループワーク審査 → 最終個人面接"
+    },
+    {
+      "id": 4,
+      "name": "株式会社SHIMA",
+      "hr": [
+        "アシスタント",
+        "スタイリスト"
+      ],
+      "recruit": "美容学校新卒者のみ",
+      "experience": [
+        "サロン案内",
+        "トレンドメイク・スタイリングレクチャー"
+      ],
+      "provided": "上限1.5万円/月",
+      "salons": "SHIMA各店舗",
+      "event": [
+        "SHIMA HAIR SHOW",
+        "トレンド発表会"
+      ],
+      "expansion": "都内一等地（青山、原宿、代官山、銀座）展開",
+      "appeal": "トレンドに敏感な若者に絶大な支持を得るファッションサロン。",
+      "point": "独自のトレンド予測に基づいたスタイル提案。モデルやインフルエンサーのヘアを多数発信。",
+      "customer": "10代後半〜20代のおしゃれな女子・男子。",
+      "staff": "洗練されたファッショニスタたち。感性を刺激し合える関係です。",
+      "start_salary": "19.8万円〜",
+      "assist_salary": "19.8万〜21.5万円",
+      "stylist_salary": "25万〜150万円（指名売上連動）",
+      "manager_salary": "80万円〜",
+      "area_salary": "100万円〜",
+      "ten_million": true,
+      "bonus": "業績賞与あり",
+      "benefits": "社会保険完備、社員割引（ヘアケア・施術）、海外研修、SNS・撮影補助",
+      "insurance": "美容国保、厚生年金、雇用保険、労災保険",
+      "vacation_system": "完全週休2日制（月曜・火曜定休など店舗による）",
+      "paid_holiday": "有給休暇、夏休み・冬休み各6日",
+      "weekends_off": "不可",
+      "shift": "完全週休2日（曜日固定）",
+      "lesson": "アカデミーレッスン（SHIMA独自の教育カリキュラム）",
+      "item": [
+        "ファッション・トータルバランス",
+        "似合わせカット",
+        "ハイトーンカラー",
+        "ヘアアレンジ"
+      ],
+      "debut": "平均3年",
+      "process": "書類選考 → 面接（複数回） → トータルコーディネート審査 → 最終面接"
+    },
+    {
+      "id": 5,
+      "name": "株式会社MINX",
+      "hr": [
+        "アシスタント",
+        "スタイリスト"
+      ],
+      "recruit": "新卒美容学校卒業者および中途スタイリスト",
+      "experience": [
+        "シャンプーレッスン見学",
+        "カット勉強会体験"
+      ],
+      "provided": "最大2万円/月",
+      "salons": "MINX 原宿・青山・銀座など",
+      "event": [
+        "社内コンテスト",
+        "撮影・業界セミナー多数",
+        "納会"
+      ],
+      "expansion": "青山、原宿、銀座などの流行発信エリアに大規模展開",
+      "appeal": "カット技術の教科書とも呼ばれる、高い技術力を誇る老舗サロン。",
+      "point": "日本中から美容師が見学や講習に訪れる高レベルな教育。生涯役立つ技術が身につきます。",
+      "customer": "10代〜60代まで幅広い世代の、質を求める本物志向の顧客。",
+      "staff": "技術に熱く、後輩への指導も親身になって行う職人集団。",
+      "start_salary": "20万円〜",
+      "assist_salary": "20万〜22万円 + 技術認定手当",
+      "stylist_salary": "26万〜80万円 + 技術歩合",
+      "manager_salary": "60万〜100万円",
+      "area_salary": "90万円〜",
+      "ten_million": true,
+      "bonus": "年2回（個人売上、店舗実績に応じる）",
+      "benefits": "社会保険完備、定期健康診断、独立支援制度、海外研修、育児時短勤務制度",
+      "insurance": "健康保険、厚生年金、雇用保険、労災保険",
+      "vacation_system": "完全週休2日制（毎週火曜定休 + 平日シフト休1日）",
+      "paid_holiday": "有給休暇、夏季休暇（最大7日）、冬季休暇（5日）",
+      "weekends_off": "月1回平日公休の土日振替（事前申請）可",
+      "shift": "シフト制",
+      "lesson": "週3回（朝または夜の合同練習） + 休日レッスンあり",
+      "item": [
+        "ベーシックカット",
+        "再現性パーマ",
+        "カラー理論",
+        "ヘアケア知識"
+      ],
+      "debut": "平均2.5年",
+      "process": "書類選考 → 一次面接 → 二次面接（実技チェック含む） → 最終面接"
+    },
+    {
+      "id": 6,
+      "name": "株式会社GARDEN",
+      "hr": [
+        "アシスタント",
+        "スタイリスト"
+      ],
+      "recruit": "美容学校新卒見込み者および第2新卒",
+      "experience": [
+        "サロンワーク体験",
+        "座談会"
+      ],
+      "provided": "上限1.5万円/月",
+      "salons": "GARDEN TOKYO、Un ami、drive for garden等",
+      "event": [
+        "撮影合宿",
+        "クリスマスパーティー",
+        "家族招待会"
+      ],
+      "expansion": "銀座・原宿・表参道エリア、NY・シンガポールなど海外進出も",
+      "appeal": "ナチュラル＆フェミニンなスタイルで人気の大型サロン。",
+      "point": "スタッフ一人ひとりの個性やライフスタイルに寄り添う「優しさ」を重んじる風土。",
+      "customer": "カジュアルでおしゃれ、親しみやすいスタイルを好むお客様が中心。",
+      "staff": "穏やかでコミュニケーション力が高く、人を思いやれるスタッフたち。",
+      "start_salary": "20万円〜",
+      "assist_salary": "20万〜22万円",
+      "stylist_salary": "25万〜80万円（基本給 + 指名・フリー歩合）",
+      "manager_salary": "50万〜90万円",
+      "area_salary": "80万円〜",
+      "ten_million": false,
+      "bonus": "決算賞与（年1回、業績による）",
+      "benefits": "社会保険完備、海外研修、育児休業・復職支援、自社オリジナル商材社販",
+      "insurance": "健康保険、厚生年金、雇用保険、労災保険",
+      "vacation_system": "完全週休2日制（平日の週休2日）",
+      "paid_holiday": "有給休暇、リフレッシュ休暇（夏季最大8連休）、冬期休暇（5日）",
+      "weekends_off": "結婚式等での特別有休のみ可",
+      "shift": "シフト制",
+      "lesson": "自主練推奨（週1回の集中指導あり、無理のないスケジュール設計）",
+      "item": [
+        "骨格診断・似合わせカット",
+        "ナチュラルパーマ",
+        "オーガニックカラー",
+        "カウンセリング・心理学"
+      ],
+      "debut": "平均3年",
+      "process": "書類選考 → グループ面接 → 技術審査（ブロー・ワインディング） → 最終面接"
+    },
+    {
+      "id": 7,
+      "name": "株式会社ALBUM",
+      "hr": [
+        "アシスタント",
+        "スタイリスト",
+        "SNSクリエイター"
+      ],
+      "recruit": "新卒または中途採用（SNSフォロワー数の多い方は優遇措置あり）",
+      "experience": [
+        "SNS運用方法レクチャー",
+        "撮影ワークフロー見学"
+      ],
+      "provided": "全額支給（規定あり）",
+      "salons": "ALBUM 渋谷、原宿、新宿、銀座など",
+      "event": [
+        "Instagramライブコンテスト",
+        "撮影セッション",
+        "忘年会"
+      ],
+      "expansion": "都内主要ハブ駅周辺、およびEC事業との連動",
+      "appeal": "インスタグラムなどのSNSフォロワー数国内トップクラス。",
+      "point": "圧倒的なSNS集客力。入社1年目からフォロワー数万人のアカウントを作るノウハウを伝授。",
+      "customer": "トレンドに敏感で、SNSで話題のハイトーンカラーやヘアスタイルを求めて来院する若者層。",
+      "staff": "トレンドへの感度が高く、能動的でスピード感を持って仕事に臨むスタッフ。",
+      "start_salary": "22万円〜",
+      "assist_salary": "22万〜24万円",
+      "stylist_salary": "30万〜150万円 + 高額インセンティブ",
+      "manager_salary": "70万〜120万円",
+      "area_salary": "100万円〜",
+      "ten_million": true,
+      "bonus": "SNS・売上連動ボーナス毎月あり",
+      "benefits": "社会保険完備、独立支援、SNS活動用デジタル機材貸出、ヘアメイク講習",
+      "insurance": "健康保険、厚生年金、雇用保険、労災保険",
+      "vacation_system": "完全週休2日制（毎週月曜・火曜など選択可能）",
+      "paid_holiday": "有給休暇（消化率ほぼ100%）、年末年始休暇（5日）",
+      "weekends_off": "平日公休を土日に振り替える「月1回土日休み制度」あり",
+      "shift": "完全週休2日シフト制（土日希望応相談）",
+      "lesson": "オンライン動画アカデミー完備。自宅での座学学習とサロンでの短期集中レッスン",
+      "item": [
+        "SNS動画編集・撮影",
+        "ハイトーンカラー・ブリーチワーク",
+        "韓国風ヘアアレンジ",
+        "スピードカット"
+      ],
+      "debut": "最短1.5年〜2年",
+      "process": "Instagramアカウント送付（必須） → 一次面接 → 最終役員面接"
+    }
+  ],
+  "review": [
+    {
+      "id": 1,
+      "user_id": "mock-user-123",
+      "salon_id": 1,
+      "score_1": 5,
+      "score_2": 4,
+      "score_3": 4,
+      "score_4": 5,
+      "score_5": 4,
+      "comments": "見学の際に、スタイリストの方がとても気さくに声をかけてくださり、サロンの雰囲気をリアルに感じることができました。カットの教育システムについて丁寧に説明していただけたのが非常に良かったです。",
+      "created_at": "2026-05-01T10:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "user_id": "mock-user-123",
+      "salon_id": 5,
+      "score_1": 5,
+      "score_2": 5,
+      "score_3": 4,
+      "score_4": 4,
+      "score_5": 5,
+      "comments": "メンズ特化サロンならではの活気にあふれていました！スタイリング体験では実際にアイロン操作のアドバイスをもらえて大満足です。デビューの早さや福利厚生の話も聞くことができ、大変参考になりました。",
+      "created_at": "2026-05-15T12:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "user_id": "another-user",
+      "salon_id": 1,
+      "score_1": 4,
+      "score_2": 5,
+      "score_3": 5,
+      "score_4": 4,
+      "score_5": 5,
+      "comments": "銀座の一等地にあるだけあって、店内が非常にきれいで設備も充実していました。ヘアショーやトレンドへの取り組みがとても魅力的で、夢が膨らむサロンでした。",
+      "created_at": "2026-05-20T15:30:00.000Z"
+    }
+  ],
+  "profiles": [
+    {
+      "id": "mock-user-123",
+      "name": "テスト太郎",
+      "bio": "都内の美容学校に通う2年生です。ダブルカラーやメンズの束感カット・パーマを得意にできるよう毎日練習しています！将来はSNSで影響力のあるスタイリストになりたいです。",
+      "favorite": [
+        1,
+        5
+      ],
+      "specialty": [
+        "ダブルカラー",
+        "メンズ特化",
+        "スパイラルパーマ",
+        "ボブ"
+      ]
+    }
+  ]
+}
