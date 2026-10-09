@@ -6,7 +6,7 @@ type MatchRegistrationPromptProps = {
 
 export function MatchRegistrationPrompt({ isAuthenticated }: MatchRegistrationPromptProps) {
     return (
-        <div className="absolute left-1/2 top-4 z-30 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl border border-indigo-100 bg-white/95 p-4 text-center shadow-lg backdrop-blur">
+        <div className="absolute left-1/2 top-40 z-30 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl border border-indigo-100 bg-white/95 p-4 text-center shadow-lg backdrop-blur">
             <p className="text-sm font-bold text-gray-800">あなたに合うサロンを見つけましょう</p>
             <p className="mt-1 text-xs leading-relaxed text-gray-500">
                 {isAuthenticated

@@ -259,7 +259,7 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
   if (useMockMap) {
     return (
       <div className="relative w-full h-full bg-slate-950 flex flex-col items-center justify-center overflow-hidden">
-        <MatchLegend />
+        {!showRegistrationPrompt && <MatchLegend />}
         {showRegistrationPrompt && <MatchRegistrationPrompt isAuthenticated={matchProfile.isAuthenticated} />}
         {/* モックマップのグリッド背景 */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] opacity-30" />
@@ -397,7 +397,7 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
 
   return (
     <div className="relative w-full h-full">
-      <MatchLegend />
+      {!showRegistrationPrompt && <MatchLegend />}
       {showRegistrationPrompt && <MatchRegistrationPrompt isAuthenticated={matchProfile.isAuthenticated} />}
       <div ref={mapRef} className="w-full h-full" />
     </div>
