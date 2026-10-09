@@ -4,11 +4,11 @@ import { createClient } from "@/utils/supabase/server";
 
 export async function POST(request: Request) {
     const supabase = await createClient();
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY;
+    const apiKey = process.env.GOOGLE_AI_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY;
 
     if (!apiKey) {
         return NextResponse.json(
-            { error: "必要な環境変数 NEXT_PUBLIC_GOOGLE_AI_API_KEY を設定してください。" },
+            { error: "AI機能を利用するには GOOGLE_AI_API_KEY の設定が必要です。" },
             { status: 500 }
         );
     }

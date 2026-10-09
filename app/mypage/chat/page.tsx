@@ -5,8 +5,40 @@ import { createClient } from "@/lib/supabase_client";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 
+type ChatMessage = {
+    role: "user" | "assistant";
+    content: string;
+};
+
+type ProfileAiResult = {
+    status: "chatting" | "completed";
+    question: string;
+    options: string[];
+};
+
+function parseProfileAiResult(text: unknown): ProfileAiResult {
+    if (typeof text !== "string" || text.trim().length === 0) {
+        throw new Error("AIから回答を取得できませんでした。APIキーの設定を確認してください。");
+    }
+
+    const parsed: unknown = JSON.parse(text);
+    if (!parsed || typeof parsed !== "object") {
+        throw new Error("AIからの回答形式が正しくありません。");
+    }
+
+    const result = parsed as Partial<ProfileAiResult>;
+    if ((result.status !== "chatting" && result.status !== "completed") ||
+        typeof result.question !== "string" ||
+        !Array.isArray(result.options) ||
+        !result.options.every(option => typeof option === "string")) {
+        throw new Error("AIからの回答形式が正しくありません。");
+    }
+
+    return result as ProfileAiResult;
+}
+
 export default function AIChatPage() {
-    const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const [currentOptions, setCurrentOptions] = useState<string[]>([]);
@@ -14,7 +46,8 @@ export default function AIChatPage() {
     const [finalSpecialties, setFinalSpecialties] = useState<string[]>([]);
 
     const scrollRef = useRef<HTMLDivElement>(null);
-    const supabase = createClient();
+    const hasInitializedRef = useRef(false);
+    const [supabase] = useState(createClient);
     const router = useRouter();
 
     // 自動スクロール
@@ -22,16 +55,7 @@ export default function AIChatPage() {
         scrollRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, isTyping]);
 
-    // 初回マウント時に会話を開始
-    useEffect(() => {
-        const initChat = async () => {
-            const firstTrigger = { role: "user", content: "得意メニューの作成を手伝ってください。" };
-            await handleSendMessage([firstTrigger]);
-        };
-        initChat();
-    }, []);
-
-    const handleSendMessage = async (currentMessages: { role: string; content: string }[]) => {
+    const handleSendMessage = async (currentMessages: ChatMessage[]) => {
         setIsTyping(true);
         setCurrentOptions([]);
 
@@ -46,10 +70,17 @@ export default function AIChatPage() {
                     }
                 }),
             });
-            const data = await res.json();
+            const data: unknown = await res.json().catch(() => null);
+            if (!res.ok) {
+                const apiError = data && typeof data === "object" && "error" in data && typeof data.error === "string"
+                    ? data.error
+                    : "AIとの通信に失敗しました。しばらくしてからもう一度お試しください。";
+                throw new Error(apiError);
+            }
 
             // AIからのJSONレスポンスをパース
-            const parsed = JSON.parse(data.text);
+            const responseText = data && typeof data === "object" && "text" in data ? data.text : undefined;
+            const parsed = parseProfileAiResult(responseText);
 
             if (parsed.status === "completed") {
                 setStatus("completed");
@@ -62,19 +93,32 @@ export default function AIChatPage() {
                 setMessages([...currentMessages, { role: "assistant", content: parsed.question }]);
                 setCurrentOptions(parsed.options || []);
             }
-        } catch (error) {
-            console.error("Chat Error:", error);
-            setMessages([...currentMessages, { role: "assistant", content: "エラーが発生しました。もう一度お試しください。" }]);
+        } catch (error: unknown) {
+            console.warn("Profile AI request failed:", error instanceof Error ? error.message : error);
+            setMessages([...currentMessages, {
+                role: "assistant",
+                content: error instanceof Error
+                    ? error.message
+                    : "エラーが発生しました。もう一度お試しください。",
+            }]);
         } finally {
             setIsTyping(false);
         }
     };
 
+    // 初回マウント時に会話を開始
+    useEffect(() => {
+        if (hasInitializedRef.current) return;
+        hasInitializedRef.current = true;
+        const firstTrigger: ChatMessage = { role: "user", content: "得意メニューの作成を手伝ってください。" };
+        void handleSendMessage([firstTrigger]);
+    }, []);
+
     const onUserSubmit = (overrideInput?: string) => {
         const messageText = overrideInput || input;
         if (!messageText.trim() || isTyping || status === "completed") return;
 
-        const newMessages = [...messages, { role: "user", content: messageText }];
+        const newMessages: ChatMessage[] = [...messages, { role: "user", content: messageText }];
         setMessages(newMessages);
         setInput("");
         handleSendMessage(newMessages);
