@@ -8,8 +8,8 @@ import { usePathname } from 'next/navigation';
 
 export const Header = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [user, setUser] = useState<any>(null);
-    const supabase = createClient();
+    const [user, setUser] = useState<{ id: string } | null>(null);
+    const [supabase] = useState(createClient);
     const router = useRouter();
 
     useEffect(() => {

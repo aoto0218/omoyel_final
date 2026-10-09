@@ -3,95 +3,80 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase_client";
 import Link from "next/link";
+import { specialtyGroups } from "@/lib/matching_options";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
+import { SalonPreferences, type ListPreferenceField } from "@/components/profile/SalonPreferences";
 import { ChevronLeft, X, Sparkles, Heart, Trash2, AlertTriangle } from "lucide-react";
+import type { Profile, Salon } from "@/types/salon";
 
 export default function MyPage() {
     const router = useRouter();
-    const supabase = createClient();
-    const [loading, setLoading] = useState(true);
+    const [supabase] = useState(createClient);
     const [isEditing, setIsEditing] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [profile, setProfile] = useState<any>(null);
-    const [originalProfile, setOriginalProfile] = useState<any>(null);
-    const [favoriteSalons, setFavoriteSalons] = useState<any[]>([]);
-
-    const specialtyGroups = [
-        {
-            category: "カラー",
-            options: ["ワンカラー", "ダブルカラー", "ハイライト", "ローライト", "グラデーション", "インナーカラー", "寒色系", "暖色系"]
-        },
-        {
-            category: "カット",
-            options: ["ベリーショート", "ショート", "ボブ", "ミディアム", "ロング"]
-        },
-        {
-            category: "髪質改善",
-            options: ["縮毛矯正", "トリートメント"]
-        },
-        {
-            category: "パーマ",
-            options: ["ボディーパーマ", "ニュアンスパーマ", "スパイラルパーマ", "ツイストパーマ", "ツイストスパイラルパーマ", "波巻きパーマ"]
-        },
-        {
-            category: "まつげ・ブロウ",
-            options: ["まつげパーマ", "まつげエクステ", "アイブロウ"]
-        },
-        {
-            category: "ネイル",
-            options: ["ジェルネイル", "ネイルアート", "フットネイル"]
-        },
-        {
-            category: "エステ",
-            options: ["フェイシャル", "ボディ", "リラクゼーション", "脱毛"]
-        },
-        {
-            category: "その他",
-            options: ["ヘアメイク", "メンズ特化", "ナチュラル", "着付け", "なんでも"]
-        }
-    ];
+    const [profile, setProfile] = useState<Profile | null>(null);
+    const [originalProfile, setOriginalProfile] = useState<Profile | null>(null);
+    const [favoriteSalons, setFavoriteSalons] = useState<Array<Pick<Salon, "id" | "name" | "images">>>([]);
+    const [loadError, setLoadError] = useState(false);
 
     useEffect(() => {
-        fetchProfile();
-    }, []);
+        let active = true;
+        const fetchProfile = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                router.push("/login");
+                return;
+            }
 
-    const fetchProfile = async () => {
-        setLoading(true);
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            router.push("/login");
-            return;
-        }
+            try {
+                const { data: profileData, error } = await supabase
+                    .from("profiles")
+                    .select("*")
+                    .eq("id", user.id)
+                    .single();
+                if (!active) return;
+                if (error || !profileData) {
+                    setLoadError(true);
+                    return;
+                }
 
-        const { data: profileData } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", user.id)
-            .single();
+                setProfile(profileData as Profile);
+                setOriginalProfile(profileData as Profile);
 
-        setProfile(profileData);
-        setOriginalProfile(profileData);
+                if (profileData.favorite?.length > 0) {
+                    const { data: salons } = await supabase
+                        .from("salons")
+                        .select("id, name, images")
+                        .in("id", profileData.favorite);
+                    if (active) {
+                        setFavoriteSalons((salons || []) as Array<Pick<Salon, "id" | "name" | "images">>);
+                    }
+                }
+            } catch {
+                if (active) setLoadError(true);
+            }
+        };
 
-        if (profileData?.favorite?.length > 0) {
-            const { data: salons } = await supabase
-                .from("salons")
-                .select("id, name, images")
-                .in("id", profileData.favorite);
-            setFavoriteSalons(salons || []);
-        }
-        setLoading(false);
-    };
+        void fetchProfile();
+        return () => { active = false; };
+    }, [router, supabase]);
 
     const handleSave = async () => {
-        setLoading(true);
+        if (!profile) return;
         const { error } = await supabase
             .from("profiles")
             .update({
                 name: profile.name,
                 bio: profile.bio,
-                specialty: profile.specialty
+                specialty: profile.specialty,
+                desired_locations: profile.desired_locations || [],
+                preferred_atmospheres: profile.preferred_atmospheres || [],
+                preferred_customer_ages: profile.preferred_customer_ages || [],
+                preferred_staff_ages: profile.preferred_staff_ages || [],
+                preferred_customer_gender: profile.preferred_customer_gender || null,
+                preferred_international_frequencies: profile.preferred_international_frequencies || [],
             })
             .eq("id", profile.id);
 
@@ -99,7 +84,6 @@ export default function MyPage() {
             setOriginalProfile(profile);
             setIsEditing(false);
         }
-        setLoading(false);
     };
 
     const handleCancel = () => {
@@ -108,11 +92,21 @@ export default function MyPage() {
     };
 
     const toggleSpecialty = (item: string) => {
+        if (!profile) return;
         const current = profile.specialty || [];
         const next = current.includes(item)
             ? current.filter((s: string) => s !== item)
             : [...current, item];
         setProfile({ ...profile, specialty: next });
+    };
+
+    const toggleListPreference = (field: ListPreferenceField, item: string) => {
+        if (!profile) return;
+        const current = profile[field] || [];
+        const next = current.includes(item)
+            ? current.filter((value: string) => value !== item)
+            : [...current, item];
+        setProfile({ ...profile, [field]: next });
     };
 
     const handleRemoveFavorite = async (e: React.MouseEvent, salonId: number, salonName: string) => {
@@ -138,7 +132,6 @@ export default function MyPage() {
     };
 
     const handleDeleteAccount = async () => {
-        setLoading(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
@@ -151,17 +144,31 @@ export default function MyPage() {
             if (profileError) throw profileError;
 
             await supabase.auth.signOut();
-            window.location.href = "/";
-        } catch (error: any) {
+            router.push("/");
+        } catch (error: unknown) {
             console.error(error);
-            alert("エラーが発生しました: " + error.message);
+            alert("エラーが発生しました: " + (error instanceof Error ? error.message : "不明なエラー"));
             setShowDeleteModal(false);
         } finally {
-            setLoading(false);
+            setShowDeleteModal(false);
         }
     };
 
-    if (loading && !profile) {
+    if (loadError) {
+        return (
+            <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-indigo-100">
+                <Header />
+                <div className="mx-auto mt-10 max-w-md rounded-3xl bg-white p-8 text-center shadow-sm">
+                    <p className="font-bold text-gray-800">プロフィールを読み込めませんでした</p>
+                    <button type="button" onClick={() => window.location.reload()} className="mt-4 rounded-full bg-indigo-500 px-5 py-2 text-sm font-bold text-white">
+                        再読み込み
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!profile) {
         return (
             <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-indigo-100">
                 <Header />
@@ -242,7 +249,7 @@ export default function MyPage() {
                             <div className="space-y-6">
                                 {specialtyGroups.map((group) => {
                                     const selectedInGroup = profile.specialty?.filter((item: string) =>
-                                        group.options.includes(item)
+                                        (group.options as readonly string[]).includes(item)
                                     );
                                     if (!isEditing && (!selectedInGroup || selectedInGroup.length === 0)) return null;
 
@@ -294,6 +301,13 @@ export default function MyPage() {
                                 </Link>
                             )}
                         </div>
+
+                        <SalonPreferences
+                            isEditing={isEditing}
+                            profile={profile}
+                            onToggle={toggleListPreference}
+                            onGenderChange={value => setProfile({ ...profile, preferred_customer_gender: value })}
+                        />
                     </div>
                 </div>
 

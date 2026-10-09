@@ -2,10 +2,10 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY;
+    const apiKey = process.env.GOOGLE_AI_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY;
     if (!apiKey) {
         return NextResponse.json(
-            { error: "必要な環境変数 NEXT_PUBLIC_GOOGLE_AI_API_KEY を設定してください。" },
+            { error: "AI機能を利用するには GOOGLE_AI_API_KEY の設定が必要です。" },
             { status: 500 }
         );
     }
@@ -13,6 +13,9 @@ export async function POST(req: Request) {
 
     try {
         const { messages } = await req.json();
+        if (!Array.isArray(messages) || messages.length === 0) {
+            return NextResponse.json({ error: "会話内容が送信されていません。" }, { status: 400 });
+        }
 
         const model = genAI.getGenerativeModel({
             model: "gemini-2.5-flash",
@@ -33,14 +36,17 @@ export async function POST(req: Request) {
 
         // Geminiの履歴形式に変換（メッセージが2つ以上ある場合のみ履歴として渡す）
         const chatHistory = messages.length > 1
-            ? messages.slice(0, -1).map((m: any) => ({
+            ? messages.slice(0, -1).map((m: { role?: unknown; content?: unknown }) => ({
                 role: m.role === "user" ? "user" : "model",
-                parts: [{ text: m.content }],
+                parts: [{ text: typeof m.content === "string" ? m.content : "" }],
             }))
             : [];
 
         const chat = model.startChat({ history: chatHistory });
-        const lastMessage = messages[messages.length - 1].content;
+        const lastMessage = messages[messages.length - 1]?.content;
+        if (typeof lastMessage !== "string" || lastMessage.trim().length === 0) {
+            return NextResponse.json({ error: "メッセージが空です。" }, { status: 400 });
+        }
         const result = await chat.sendMessage(lastMessage);
         const response = await result.response;
 

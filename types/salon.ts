@@ -75,6 +75,12 @@ export interface Profile {
     bio: string;
     favorite: number[];
     specialty: string[];
+    desired_locations?: string[];
+    preferred_atmospheres?: string[];
+    preferred_customer_ages?: string[];
+    preferred_staff_ages?: string[];
+    preferred_customer_gender?: string | null;
+    preferred_international_frequencies?: string[];
 }
 
 export interface FavoriteSalon {

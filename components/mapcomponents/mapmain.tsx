@@ -1,10 +1,16 @@
 "use client";
 
-import { useRef, useEffect, useState, useCallback, forwardRef, useImperativeHandle } from "react";
+import { useRef, useEffect, useState, useMemo, useCallback, forwardRef, useImperativeHandle } from "react";
 import { Salon as BaseSalon } from "@/types/salon";
 import Image from "next/image";
 import Link from "next/link";
 import { Star, MapPin, X, Navigation } from "lucide-react";
+
+import { getMarkerIcon } from "@/lib/match_colors";
+import { getSalonMatch, isMatchProfileReady } from "@/lib/salon_match";
+import { useMapProfile } from "@/lib/use_map_profile";
+import { MatchLegend } from "@/components/mapcomponents/MatchLegend";
+import { MatchRegistrationPrompt } from "@/components/mapcomponents/MatchRegistrationPrompt";
 
 interface Salon extends BaseSalon {
   rating?: number;
@@ -18,6 +24,7 @@ type Location = {
   lat: number;
   lon: number;
   image1?: string;
+  match: ReturnType<typeof getSalonMatch>;
   averageRatings?: {
     overall: number;
     rating_1: number;
@@ -45,16 +52,15 @@ const MAP_BOUNDS = {
 
 const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [locations, setLocations] = useState<Location[]>([]);
+  const matchProfile = useMapProfile();
   const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [userLatLng, setUserLatLng] = useState<google.maps.LatLng | null>(null);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
   const [useMockMap, setUseMockMap] = useState(false);
-  const [activeLocation, setActiveLocation] = useState<Location | null>(null);
+  const [activeLocationId, setActiveLocationId] = useState<number | null>(null);
 
   // salons -> locations
-  useEffect(() => {
-    const locs: Location[] = salons.map(s => ({
+  const locations = useMemo<Location[]>(() => salons.map(s => ({
+      match: getSalonMatch(matchProfile, s, matchProfile.favorites.includes(s.id)),
       id: s.id,
       name: s.name,
       address: s.address,
@@ -64,15 +70,15 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
       averageRatings: s.averageRatings ? s.averageRatings : undefined,
       reviewCount: s.averageRatings?.reviewCount ?? 0,
       rating: s.averageRatings?.overall,
-    }));
-    setLocations(locs);
-  }, [salons]);
+    })), [salons, matchProfile]);
+  const activeLocation = locations.find(loc => loc.id === activeLocationId) ?? null;
+  const showRegistrationPrompt = !matchProfile.isLoading && !isMatchProfileReady(matchProfile);
 
   // Google Maps API キーの有無によってモックマップにフォールバックする
   useEffect(() => {
     if (typeof window !== "undefined") {
       // Google Maps の認証エラー (InvalidKeyMapError 等) を検知してモックに切り替える
-      (window as any).gm_authFailure = () => {
+      (window as Window & { gm_authFailure?: () => void }).gm_authFailure = () => {
         setUseMockMap(true);
       };
 
@@ -115,7 +121,6 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
       navigator.geolocation.getCurrentPosition(
         pos => {
           const userPos = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
-          setUserLatLng(userPos);
 
           new google.maps.Marker({
             position: userPos,
@@ -149,9 +154,15 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
     }
   }, [map, useMockMap]);
 
+  useEffect(() => {
+    if (isScriptLoaded) initMap();
+  }, [isScriptLoaded, initMap]);
+
   // Google Maps のマーカー配置
   useEffect(() => {
-    if (useMockMap || !map || locations.length === 0) return;
+    if (useMockMap || !map) return;
+    const markers: google.maps.Marker[] = [];
+    const infoWindows: google.maps.InfoWindow[] = [];
     let openedInfoWindow: google.maps.InfoWindow | null = null;
 
     locations.forEach((loc) => {
@@ -160,14 +171,22 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
         const marker = new google.maps.Marker({
           position: spot,
           map,
-          title: loc.name,
+          title: [loc.name, loc.match.description].filter(Boolean).join("："),
+          icon: getMarkerIcon(loc.match.color),
         });
 
+        markers.push(marker);
         const content = `
 <div style="display:flex;gap:8px;font-family:sans-serif;width:260px;">
   <img src="${loc.image1 || '/fallback.png'}" style="width:120px;height:120px;object-fit:cover;border-radius:6px;" />
   <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;">
     <div>
+    ${loc.match.description
+      ? `<div style="color:#C2410C;font-size:15px;font-weight:bold;margin:4px 0 8px;">
+           ${loc.match.description}
+         </div>`
+      : ""
+    }
     ${loc.rating && loc.rating > 0
       ? `<div style="color: black; font-size:20px;font-weight:bold;margin:10px 0 5px;">
            ⭐ ${loc.rating.toFixed(1)}
@@ -200,6 +219,7 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
           headerContent: headerEl,
         });
 
+        infoWindows.push(info);
         marker.addListener("click", () => {
           if (openedInfoWindow && openedInfoWindow !== info) openedInfoWindow.close();
           info.open(map, marker);
@@ -209,6 +229,13 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
         console.error(`Marker error for ${loc.name}:`, err);
       }
     });
+    return () => {
+      infoWindows.forEach(info => info.close());
+      markers.forEach(marker => {
+        google.maps.event.clearInstanceListeners(marker);
+        marker.setMap(null);
+      });
+    };
   }, [locations, map, useMockMap]);
 
   useImperativeHandle(ref, () => ({
@@ -232,6 +259,8 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
   if (useMockMap) {
     return (
       <div className="relative w-full h-full bg-slate-950 flex flex-col items-center justify-center overflow-hidden">
+        {!showRegistrationPrompt && <MatchLegend />}
+        {showRegistrationPrompt && <MatchRegistrationPrompt isAuthenticated={matchProfile.isAuthenticated} />}
         {/* モックマップのグリッド背景 */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] opacity-30" />
         <div className="absolute inset-0 bg-radial-gradient from-indigo-500/10 via-transparent to-transparent pointer-events-none" />
@@ -256,10 +285,12 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
         </div>
 
         {/* 案内インフォ */}
-        <div className="absolute top-4 left-4 z-20 bg-slate-900/90 backdrop-blur border border-slate-800 text-white rounded-2xl px-4 py-2.5 shadow-lg max-w-[280px]">
-          <p className="text-xs font-bold text-indigo-400">🗺️ デモ用シミュレータマップ</p>
-          <p className="text-[10px] text-slate-400 mt-0.5">Google Mapsキー未設定のため、ローカルのピン位置を可視化したシミュレーターを表示しています。</p>
-        </div>
+        {!showRegistrationPrompt && (
+          <div className="absolute top-4 left-4 z-20 bg-slate-900/90 backdrop-blur border border-slate-800 text-white rounded-2xl px-4 py-2.5 shadow-lg max-w-[280px]">
+            <p className="text-xs font-bold text-indigo-400">🗺️ デモ用シミュレータマップ</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Google Mapsキー未設定のため、ローカルのピン位置を可視化したシミュレーターを表示しています。</p>
+          </div>
+        )}
 
         {/* ピンの配置 */}
         {locations.map((loc) => {
@@ -268,19 +299,21 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
           return (
             <button
               key={loc.id}
-              onClick={() => setActiveLocation(loc)}
+              onClick={() => setActiveLocationId(loc.id)}
+              aria-label={[loc.name, loc.match.description].filter(Boolean).join("：")}
+              title={[loc.name, loc.match.description].filter(Boolean).join("：")}
               className="absolute -translate-x-1/2 -translate-y-1/2 z-10 transition-all duration-300"
               style={{ left: coords.left, top: coords.top }}
             >
               {/* ピンの波紋エフェクト */}
-              <span className={`absolute inline-flex h-10 w-10 -left-3 -top-3 rounded-full bg-indigo-400/30 opacity-75 animate-ping ${isActive ? "scale-125" : ""}`} />
+              <span className={`absolute inline-flex h-10 w-10 -left-3 -top-3 rounded-full opacity-30 animate-ping ${isActive ? "scale-125" : ""}`} style={{ backgroundColor: loc.match.color }} />
               
               {/* ピン本体 */}
               <div className={`relative flex items-center justify-center w-8 h-8 rounded-full border-2 shadow-lg transition-transform ${
                 isActive 
-                  ? "bg-amber-400 border-amber-300 text-slate-950 scale-125 z-20" 
-                  : "bg-indigo-500 border-indigo-400 text-white hover:scale-110"
-              }`}>
+                  ? "border-white text-white scale-125 z-20"
+                  : "border-white text-white hover:scale-110"
+              }`} style={{ backgroundColor: loc.match.color }}>
                 <MapPin className="w-4 h-4" />
               </div>
             </button>
@@ -289,10 +322,10 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
 
         {/* 詳細ポップアップカード (モバイル用の下部スライドイン風) */}
         {activeLocation && (
-          <div className="absolute bottom-6 left-4 right-4 z-30 bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-3xl p-5 shadow-2xl animate-in slide-in-from-bottom-8 duration-300 max-w-md mx-auto">
+          <div className="absolute bottom-24 left-4 right-4 z-30 bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-3xl p-5 shadow-2xl animate-in slide-in-from-bottom-8 duration-300 max-w-md mx-auto">
             {/* 閉じるボタン */}
             <button 
-              onClick={() => setActiveLocation(null)}
+              onClick={() => setActiveLocationId(null)}
               className="absolute top-4 right-4 p-1.5 bg-slate-800 text-slate-400 hover:text-white rounded-full transition-colors"
             >
               <X className="w-4 h-4" />
@@ -318,6 +351,11 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
                   </p>
                 </div>
 
+                {activeLocation.match.description && (
+                  <p className="mt-2 text-sm font-bold text-orange-300">
+                    {activeLocation.match.description}
+                  </p>
+                )}
                 <div className="flex items-center gap-2 mt-2">
                   {activeLocation.rating && activeLocation.rating > 0 ? (
                     <>
@@ -357,7 +395,13 @@ const Mapmain = forwardRef<ChildHandle, { salons: Salon[] }>(({ salons }, ref) =
     );
   }
 
-  return <div ref={mapRef} style={{ width: "100%", height: "100%" }} />;
+  return (
+    <div className="relative w-full h-full">
+      {!showRegistrationPrompt && <MatchLegend />}
+      {showRegistrationPrompt && <MatchRegistrationPrompt isAuthenticated={matchProfile.isAuthenticated} />}
+      <div ref={mapRef} className="w-full h-full" />
+    </div>
+  );
 });
 
 Mapmain.displayName = "Mapmain";

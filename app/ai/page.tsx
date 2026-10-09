@@ -26,11 +26,11 @@ export default function ChatPage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [expandedMessages, setExpandedMessages] = useState<Set<number>>(new Set());
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<{ id: string } | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const INITIAL_SALON_COUNT = 5;
-    const supabase = createClient();
+    const [supabase] = useState(createClient);
 
     // 自動スクロール
     const scrollToBottom = () => {
@@ -109,10 +109,10 @@ export default function ChatPage() {
             } else {
                 throw new Error(data.error || '不明なエラー');
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             setMessages(prev => [...prev, {
                 role: 'assistant',
-                content: `エラーが発生しました: ${error.message}`,
+                content: `エラーが発生しました: ${error instanceof Error ? error.message : "不明なエラー"}`,
                 timestamp: new Date(),
             }]);
         } finally {
@@ -124,7 +124,7 @@ export default function ChatPage() {
         <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-indigo-100">
             {/* 共通のHeaderコンポーネントを利用 */}
             <Header />
-            <Link href="/" className="absolute top-4 left-4 flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-full text-gray-500 text-sm font-bold shadow-sm hover:bg-gray-50 transition-all">
+            <Link href="/" aria-label="サロン検索に戻る" className="absolute top-4 left-4 flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-full text-gray-500 text-sm font-bold shadow-sm hover:bg-gray-50 transition-all">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
